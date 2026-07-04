@@ -333,8 +333,10 @@ function renderHome() {
         <div class="t">${esc(lvl.title)}</div>
         <div class="s ${/[א-ת]/.test(lvl.sub) ? 'he' : ''}">${esc(lvl.sub)}</div>
         ${done ? `<div class="stars" style="color:var(--sun)">${starsTxt}</div>` : ''}
+        ${locked ? '<div class="stars" style="color:var(--sun);font-size:13px">⚡ Know it already? Tap to test out!</div>' : ''}
       </div>`;
-    if (!locked) node.addEventListener('click', () => { SFX.click(); startLevel(lvl); });
+    if (locked) node.addEventListener('click', () => { SFX.click(); showSkillCheckIntro(i); });
+    else node.addEventListener('click', () => { SFX.click(); startLevel(lvl); });
     path.appendChild(node);
   });
 
@@ -390,7 +392,7 @@ function buildQueue(level) {
 // --- mid-lesson save/resume: refreshing the page must never lose a kid's progress ---
 function persistLesson() {
   const L = lesson;
-  if (!L) return;
+  if (!L || L.isCheck) return; // skill checks are short one-shots, never resumed
   state.lessonSave = {
     levelId: L.level.id, idx: L.idx, totalQuiz: L.totalQuiz, correctFirst: L.correctFirst,
     combo: L.combo, xpGained: L.xpGained,
@@ -468,7 +470,7 @@ function finishStep(correct, subHtml) {
     } else {
       L.combo = 0;
       SFX.bad(); mascotMood('sad');
-      if (!step.requeued) L.queue.push({ ...step, requeued: true });
+      if (!step.requeued && !L.isCheck) L.queue.push({ ...step, requeued: true });
     }
   } else {
     SFX.click();
@@ -593,8 +595,8 @@ function wireLearnMic(target, altTarget, displayHe) {
 
 // --- tap the letter / vowel ---
 function renderPickChar(step, stage) {
-  const it = step.item, pool = lesson.level.items;
-  const isVowel = lesson.level.kind === 'vowels';
+  const it = step.item, pool = step.pool || lesson.level.items;
+  const isVowel = (step.srcKind || lesson.level.kind) === 'vowels';
   const prompt = document.createElement('div');
   prompt.className = 'prompt';
   prompt.innerHTML = isVowel
@@ -619,10 +621,10 @@ function renderPickChar(step, stage) {
 
 // --- what sound does it make ---
 function renderPickName(step, stage) {
-  const it = step.item, pool = lesson.level.items;
+  const it = step.item, pool = step.pool || lesson.level.items;
   const prompt = document.createElement('div');
   prompt.className = 'prompt';
-  prompt.innerHTML = `What is this ${lesson.level.kind === 'vowels' ? 'vowel' : 'letter'}?`;
+  prompt.innerHTML = `What is this ${(step.srcKind || lesson.level.kind) === 'vowels' ? 'vowel' : 'letter'}?`;
   stage.appendChild(prompt);
 
   const hero = document.createElement('div');
@@ -649,7 +651,7 @@ function renderPickName(step, stage) {
 
 // --- vocab: hear → pick meaning ---
 function renderHearPick(step, stage) {
-  const it = step.item, pool = lesson.level.items;
+  const it = step.item, pool = step.pool || lesson.level.items;
   const prompt = document.createElement('div');
   prompt.className = 'prompt';
   prompt.innerHTML = `🦜 Duki said a word — which one is it? <button class="icon-btn" id="replay">🔊</button>`;
@@ -674,7 +676,7 @@ function renderHearPick(step, stage) {
 
 // --- vocab/sentence: read Hebrew → pick meaning ---
 function renderReadPick(step, stage) {
-  const it = step.item, pool = lesson.level.items;
+  const it = step.item, pool = step.pool || lesson.level.items;
   const prompt = document.createElement('div');
   prompt.className = 'prompt';
   prompt.textContent = 'What does this say?';
@@ -703,7 +705,7 @@ function renderReadPick(step, stage) {
 
 // --- vocab: English → pick Hebrew ---
 function renderEnPick(step, stage) {
-  const it = step.item, pool = lesson.level.items;
+  const it = step.item, pool = step.pool || lesson.level.items;
   const prompt = document.createElement('div');
   prompt.className = 'prompt';
   prompt.innerHTML = `How do you say <b>${esc(it.en)}</b> ${it.emoji} in Hebrew?`;
@@ -891,6 +893,7 @@ function renderBuild(step, stage) {
 // ---------- results ----------
 function finishLevel() {
   const L = lesson;
+  if (L.isCheck) return finishCheck();
   const acc = L.totalQuiz ? L.correctFirst / L.totalQuiz : 1;
   const stars = acc >= 0.9 ? 3 : acc >= 0.7 ? 2 : 1;
   const firstTime = !(L.level.id in state.stars);
@@ -923,6 +926,112 @@ function finishLevel() {
                 stars === 2 ? 'Two stars! Awesome work!' : 'Level done! Practice again for more stars!';
   mascotSay(`🎉 ${cheer} You won <b>${coins} coins</b> — spend them in the costume shop!`,
     [['en', cheer], ['he', 'כל הכבוד!']], 'happy');
+  lesson = null;
+}
+
+// ---------- skill check: test out of levels you already know ----------
+const CHECK_PASS = 0.8;
+
+function buildCheckQueue(fromIdx, toIdx) {
+  const cand = [];
+  for (let i = fromIdx; i < toIdx; i++) {
+    const lvl = LEVELS[i];
+    const mk = (type, item) => ({ type, item, isQuiz: true, pool: lvl.items, srcKind: lvl.kind });
+    const items = shuffle(lvl.items);
+    if (lvl.kind === 'letters' || lvl.kind === 'review' || lvl.kind === 'vowels') {
+      items.slice(0, 3).forEach((it, j) => cand.push(mk(j % 2 ? 'pickName' : 'pickChar', it)));
+    } else if (lvl.kind === 'vocab') {
+      items.slice(0, 3).forEach((it, j) => cand.push(mk(['hearPick', 'readPick', 'enPick'][j % 3], it)));
+    } else { // sentences
+      items.slice(0, 2).forEach((it, j) => cand.push(mk(j % 2 ? 'build' : 'readPick', it)));
+    }
+  }
+  return shuffle(cand).slice(0, 10);
+}
+
+function showSkillCheckIntro(targetIdx) {
+  const fromIdx = LEVELS.findIndex(l => !(l.id in state.stars));
+  const target = LEVELS[targetIdx];
+  const n = targetIdx - fromIdx;
+  const old = $('.modal-overlay'); if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `
+    <div class="modal">
+      <h3>⚡ Skill Check</h3>
+      <p style="font-size:17px;color:var(--ink)"><b>${target.emoji} ${esc(target.title)}</b> is locked… but if you already know your stuff, prove it!</p>
+      <p>Answer <b>10 quick questions</b> from the ${n === 1 ? 'level' : n + ' levels'} before it.
+      Get <b>8 or more</b> right and you jump straight ahead — every skipped level gets ⭐⭐ and you win <b>🪙 20 bonus coins</b>.</p>
+      <p>No learning cards, no second tries. Miss it? No problem — nothing is lost, and you can try again or play the levels.</p>
+      <div class="modal-row">
+        <button class="btn btn-primary" id="check-go" style="font-size:18px;padding:12px 28px">⚡ Let's go!</button>
+        <button class="btn btn-ghost" id="check-no">Not yet</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  $('#check-go').addEventListener('click', () => { ov.remove(); SFX.click(); startSkillCheck(targetIdx); });
+  $('#check-no').addEventListener('click', () => ov.remove());
+}
+
+function startSkillCheck(targetIdx) {
+  synth && synth.cancel();
+  const fromIdx = LEVELS.findIndex(l => !(l.id in state.stars));
+  const target = LEVELS[targetIdx];
+  lesson = {
+    level: { id: '__check', title: 'Skill Check', emoji: '⚡', kind: 'check', items: [] },
+    isCheck: true, checkFrom: fromIdx, checkTarget: targetIdx,
+    queue: buildCheckQueue(fromIdx, targetIdx),
+    idx: 0, totalQuiz: 0, correctFirst: 0, combo: 0, xpGained: 0,
+  };
+  show('lesson');
+  renderStep();
+  mascotSay(`⚡ Skill Check! Get <b>${Math.ceil(lesson.queue.length * CHECK_PASS)} of ${lesson.queue.length}</b> right to unlock <b>${esc(target.title)}</b>. Show me what you know!`,
+    [['en', 'Skill check! No hints this time — show me what you know!']]);
+}
+
+function finishCheck() {
+  const L = lesson;
+  const total = L.totalQuiz || 1, correct = L.correctFirst;
+  const passed = correct / total >= CHECK_PASS;
+  const target = LEVELS[L.checkTarget];
+  const res = $('#results');
+  if (passed) {
+    let unlocked = 0;
+    for (let i = L.checkFrom; i < L.checkTarget; i++) {
+      if (!(LEVELS[i].id in state.stars)) unlocked++;
+      state.stars[LEVELS[i].id] = Math.max(state.stars[LEVELS[i].id] || 0, 2);
+    }
+    state.coins += 20;
+    save();
+    res.innerHTML = `
+      <h2>⚡ Skill Check PASSED!</h2>
+      <div class="stars-row">🏆</div>
+      <div class="gains">
+        <div class="gain">🎯 ${correct}/${total}<span>correct</span></div>
+        <div class="gain">🔓 ${unlocked}<span>level${unlocked === 1 ? '' : 's'} skipped</span></div>
+        <div class="gain">🪙 +20<span>bonus coins</span></div>
+      </div>
+      <button class="btn btn-primary" id="check-start-target" style="margin-top:14px">${target.emoji} Play ${esc(target.title)}!</button>
+      <button class="btn btn-ghost" id="check-map">🗺 Back to the map</button>`;
+    show('results');
+    $('#check-start-target').addEventListener('click', () => { SFX.click(); startLevel(target); });
+    $('#check-map').addEventListener('click', () => { SFX.click(); renderHome(); });
+    SFX.fanfare(); confetti(120); setTimeout(() => SFX.coin(), 700);
+    mascotSay(`🤯 WOW — you really know this! <b>${esc(target.title)}</b> is unlocked. Kol hakavod!`,
+      [['en', `Wow, you really know this! ${target.title} is unlocked!`], ['he', 'כל הכבוד!']], 'happy');
+  } else {
+    res.innerHTML = `
+      <h2>Not yet… 💪</h2>
+      <div style="font-size:20px;color:#cfc4f2">You got <b style="color:var(--sun)">${correct}/${total}</b> — you need ${Math.ceil(total * CHECK_PASS)} to jump ahead.</div>
+      <div style="font-size:17px;color:#cfc4f2;max-width:440px;line-height:1.5">No stars lost, no coins lost! Play the next levels to power up — or try the check again with fresh questions.</div>
+      <button class="btn btn-primary" id="check-retry" style="margin-top:14px">⚡ Try again</button>
+      <button class="btn btn-ghost" id="check-map">🗺 Back to the map</button>`;
+    show('results');
+    const tIdx = L.checkTarget;
+    $('#check-retry').addEventListener('click', () => { SFX.click(); startSkillCheck(tIdx); });
+    $('#check-map').addEventListener('click', () => { SFX.click(); renderHome(); });
+    mascotSay(`So close! The path is the way — every level makes you stronger 💪`, [['en', 'So close! Every level makes you stronger!']], 'sad');
+  }
   lesson = null;
 }
 

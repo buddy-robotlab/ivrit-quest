@@ -41,6 +41,9 @@ python3 -m http.server 8471
   retrieval practice (quizzes right after learning), spaced review (boss levels + missed items
   re-queued), low-stakes mastery (no lives — accuracy earns stars).
 - **Gamification**: XP + ranks, 3-star levels, combo streaks, coins.
+- **Skill Checks**: tap any locked level to "test out" — 10 hard questions from the skipped
+  levels, 80% to pass; passing awards ⭐⭐ on skipped levels + bonus coins. Kids who already
+  know the Alef-Bet can jump straight to vocabulary.
 - **Reward loop**: coins buy costumes (crowns, capes, space suits…) for your avatar in the
   Costume Shop after each level.
 

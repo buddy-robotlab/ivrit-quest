@@ -137,7 +137,7 @@ html, body {
 .lvl-node.done .bubble { background: linear-gradient(180deg, #4fe8b8, var(--mint)); box-shadow: 0 5px 0 #0f9c72; }
 .lvl-node.current .bubble { background: linear-gradient(180deg, var(--sun), var(--orange)); box-shadow: 0 5px 0 #c96f10; animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 0%,100% { transform: scale(1);} 50% { transform: scale(1.1);} }
-.lvl-node.locked { opacity: .45; cursor: default; }
+.lvl-node.locked { opacity: .55; }
 .lvl-node.locked .bubble { background: linear-gradient(180deg, #7a7794, #55516e); box-shadow: 0 5px 0 #3a3752; }
 .lvl-node .meta .t { font-size: 19px; font-weight: bold; }
 .lvl-node .meta .s { font-size: 14px; color: #cfc4f2; margin-top: 2px; }
