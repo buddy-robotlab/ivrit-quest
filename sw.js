@@ -1,5 +1,5 @@
 // Ivrit Quest — service worker: cache everything, work fully offline
-const CACHE = 'ivrit-quest-v1';
+const CACHE = 'ivrit-quest-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,18 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' bypasses the browser HTTP cache so a new SW version
+  // always installs fresh files (GitHub Pages serves with max-age=600)
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.all(ASSETS.map((u) =>
+        fetch(new Request(u, { cache: 'reload' })).then((res) => {
+          if (!res.ok) throw new Error('fetch failed: ' + u);
+          return c.put(u, res);
+        })
+      )))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {

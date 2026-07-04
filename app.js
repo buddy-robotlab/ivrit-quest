@@ -294,7 +294,8 @@ function renderHome() {
     const current = i === currentIdx;
     const locked = i > currentIdx;
     const node = document.createElement('div');
-    node.className = 'lvl-node ' + (i % 2 ? 'offR ' : 'offL ') + (done ? 'done' : current ? 'current' : locked ? 'locked' : '');
+    const resume = state.lessonSave && state.lessonSave.levelId === lvl.id ? 'resume ' : '';
+    node.className = 'lvl-node ' + (i % 2 ? 'offR ' : 'offL ') + resume + (done ? 'done' : current ? 'current' : locked ? 'locked' : '');
     const starsTxt = done ? '★'.repeat(state.stars[lvl.id]) + '<span style="opacity:.3">' + '★'.repeat(3 - state.stars[lvl.id]) + '</span>' : '';
     node.innerHTML = `
       <div class="bubble">${locked ? '🔒' : lvl.emoji}</div>
@@ -356,9 +357,49 @@ function buildQueue(level) {
   return q;
 }
 
+// --- mid-lesson save/resume: refreshing the page must never lose a kid's progress ---
+function persistLesson() {
+  const L = lesson;
+  if (!L) return;
+  state.lessonSave = {
+    levelId: L.level.id, idx: L.idx, totalQuiz: L.totalQuiz, correctFirst: L.correctFirst,
+    combo: L.combo, xpGained: L.xpGained,
+    steps: L.queue.map(s => ({
+      t: s.type,
+      i: L.level.items.indexOf(s.item),
+      r: s.requeued ? 1 : 0,
+      p: s.pairs ? s.pairs.map(x => L.level.items.indexOf(x)) : undefined,
+    })),
+  };
+  save();
+}
+function restoreLesson(level, data) {
+  const queue = data.steps.map(d => ({
+    type: d.t,
+    item: d.i >= 0 ? level.items[d.i] : null,
+    isQuiz: d.t !== 'learn' ? true : undefined,
+    requeued: d.r ? true : undefined,
+    pairs: d.p ? d.p.map(i => level.items[i]) : undefined,
+  }));
+  if (queue.some(s => s.type !== 'match' && !s.item)) throw new Error('stale save');
+  return {
+    level, queue, idx: Math.min(data.idx, queue.length - 1),
+    totalQuiz: data.totalQuiz || 0, correctFirst: data.correctFirst || 0,
+    combo: data.combo || 0, xpGained: data.xpGained || 0,
+  };
+}
+
 function startLevel(level) {
   synth && synth.cancel();
-  lesson = { level, queue: buildQueue(level), idx: 0, totalQuiz: 0, correctFirst: 0, combo: 0, xpGained: 0 };
+  lesson = null;
+  if (state.lessonSave && state.lessonSave.levelId === level.id) {
+    try {
+      lesson = restoreLesson(level, state.lessonSave);
+      mascotSay(`Welcome back! Picking up right where you left off 💪`, [['en', 'Welcome back! Picking up where you left off!']], 'happy');
+    } catch (e) { lesson = null; }
+  }
+  if (!lesson) lesson = { level, queue: buildQueue(level), idx: 0, totalQuiz: 0, correctFirst: 0, combo: 0, xpGained: 0 };
+  persistLesson();
   show('lesson');
   renderStep();
 }
@@ -408,7 +449,7 @@ function finishStep(correct, subHtml) {
     L.idx++;
     updateProgress();
     if (L.idx >= L.queue.length) finishLevel();
-    else renderStep();
+    else { persistLesson(); renderStep(); }
   }, step.isQuiz ? (correct ? 1050 : 1950) : 150);
 }
 
@@ -817,6 +858,7 @@ function finishLevel() {
   const coins = 10 + stars * 5;
   state.stars[L.level.id] = Math.max(state.stars[L.level.id] || 0, stars);
   state.coins += coins;
+  delete state.lessonSave;
   save();
 
   const res = $('#results');
@@ -882,12 +924,65 @@ function renderShop() {
   });
 }
 
+// ---------- backup codes (parents' insurance against cleared storage) ----------
+function encodeSave() { return btoa(unescape(encodeURIComponent(JSON.stringify(state)))); }
+function decodeSave(code) {
+  const s = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+  if (typeof s.xp !== 'number' || typeof s.coins !== 'number') throw new Error('bad code');
+  return s;
+}
+function showBackup() {
+  const old = $('.modal-overlay'); if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.innerHTML = `
+    <div class="modal">
+      <h3>🔑 Progress Backup</h3>
+      <p>Copy this magic code somewhere safe (Notes, a photo…). Paste it back any time — on any device — to restore all stars, coins and costumes.</p>
+      <textarea readonly id="backup-code">${encodeSave()}</textarea>
+      <button class="btn btn-green" id="copy-code">📋 Copy code</button>
+      <p style="margin-top:14px">Restore from a saved code:</p>
+      <textarea id="restore-code" placeholder="Paste a magic code here…"></textarea>
+      <div class="modal-row">
+        <button class="btn btn-primary" id="do-restore" style="font-size:17px;padding:10px 24px">Restore</button>
+        <button class="btn btn-ghost" id="close-modal">Close</button>
+      </div>
+      <div id="backup-msg" style="min-height:20px;margin-top:8px;font-size:14px;color:var(--mint)"></div>
+    </div>`;
+  document.body.appendChild(ov);
+  $('#backup-code').addEventListener('click', (e) => e.target.select());
+  $('#copy-code').addEventListener('click', async () => {
+    const ta = $('#backup-code'); ta.select();
+    try { await navigator.clipboard.writeText(ta.value); $('#backup-msg').textContent = '✓ Copied!'; }
+    catch (e) { document.execCommand('copy'); $('#backup-msg').textContent = '✓ Copied!'; }
+  });
+  $('#do-restore').addEventListener('click', () => {
+    try {
+      state = { ...state, ...decodeSave($('#restore-code').value) };
+      save();
+      ov.remove();
+      renderHome();
+      mascotSay('🎉 Progress restored — everything is back!', [['en', 'Progress restored!']], 'happy');
+    } catch (e) { $('#backup-msg').style.color = 'var(--wrong)'; $('#backup-msg').textContent = 'That code does not look right — check it and try again.'; }
+  });
+  $('#close-modal').addEventListener('click', () => ov.remove());
+}
+
 // ---------- boot ----------
 function boot() {
   load();
   starryBg();
   $('#mascot').innerHTML = DUKI_SVG;
   $('#splash-mascot').innerHTML = DUKI_SVG;
+
+  // ask the browser to never evict our storage (matters on iPad Safari)
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+  // returning player? make it obvious their progress is safe
+  if (state.xp > 0 || totalStars() > 0) {
+    $('#splash p').innerHTML = `Welcome back! ⭐ <b>${totalStars()} stars</b> · 🪙 <b>${state.coins} coins</b> — all safe and waiting for you.`;
+    $('#start-btn').textContent = '▶ Continue the Adventure';
+  }
 
   $('#start-btn').addEventListener('click', () => {
     initAudio();
@@ -900,5 +995,6 @@ function boot() {
   $('#quit-btn').addEventListener('click', () => { synth && synth.cancel(); lesson = null; renderHome(); });
   $('#shop-btn').addEventListener('click', () => { SFX.click(); renderShop(); });
   $('#shop-back').addEventListener('click', () => { SFX.click(); renderHome(); });
+  $('#backup-btn').addEventListener('click', () => { SFX.click(); showBackup(); });
 }
 document.addEventListener('DOMContentLoaded', boot);
