@@ -31,8 +31,11 @@ python3 -m http.server 8471
 
 ## 🎮 What's inside
 
-- **15 levels**: Alef-Bet (5 letter levels + boss review) → vowels (nikud) → 6 vocabulary worlds
-  (greetings, family, numbers, colors, animals, food) → 2 sentence levels.
+- **24 levels**: Alef-Bet (5 letter levels + boss review) → vowels (nikud) → 12 vocabulary worlds
+  (greetings, family, numbers, colors, animals, food, everyday life, getting around, games,
+  motion, masculine/feminine forms, plurals) → science & space → 3 sentence/conversation levels.
+- **Free roam**: letters are sequential; finishing them unlocks everything through Numbers,
+  and finishing Numbers removes all remaining locks.
 - **Duki the Hoopoe** 🪶 (Israel's national bird) — the on-screen guide who talks, cheers, and gives
   memory tricks for every letter.
 - **Voice-first**: every word is spoken aloud (Hebrew TTS), and kids answer by **speaking Hebrew**
@@ -44,8 +47,9 @@ python3 -m http.server 8471
 - **Skill Checks**: tap any locked level to "test out" — 10 hard questions from the skipped
   levels, 80% to pass; passing awards ⭐⭐ on skipped levels + bonus coins. Kids who already
   know the Alef-Bet can jump straight to vocabulary.
-- **Reward loop**: coins buy costumes (crowns, capes, space suits…) for your avatar in the
-  Costume Shop after each level.
+- **Reward loop**: coins buy 100+ items for your avatar in the Costume Shop — hats, glasses,
+  outfits, hand items, pets, rides, and treasures, from a 25-coin cap to a 2,500-coin
+  Legendary Mega Diamond.
 
 ## 🗂 Files
 

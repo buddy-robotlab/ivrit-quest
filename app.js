@@ -137,8 +137,9 @@ function heMatch(alts, target) {
 
 // ---------- state ----------
 const SAVE_KEY = 'ivritQuestSave1';
-let state = { xp: 0, coins: 0, stars: {}, owned: [], eq: { hat: null, eyes: null, body: null } };
-function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && typeof s.xp === 'number') state = { ...state, ...s, eq: { hat: null, eyes: null, body: null, ...(s.eq || {}) } }; } catch (e) {} }
+const EQ_SLOTS = { hat: null, eyes: null, body: null, hand: null, pet: null, ride: null, treasure: null };
+let state = { xp: 0, coins: 0, stars: {}, owned: [], eq: { ...EQ_SLOTS } };
+function load() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && typeof s.xp === 'number') state = { ...state, ...s, eq: { ...EQ_SLOTS, ...(s.eq || {}) } }; } catch (e) {} }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
 const totalStars = () => Object.values(state.stars).reduce((a, b) => a + b, 0);
 function rankOf(xp) { let r = RANKS[0]; for (const k of RANKS) if (xp >= k.xp) r = k; return r; }
@@ -204,8 +205,18 @@ function starPts(cx, cy, r) {
   }
   return p.trim();
 }
+// items with hand-drawn SVG art; everything else renders as an emoji sticker
+const SVG_ART = new Set(['cap', 'tembel', 'wizard', 'crown', 'shades', 'starglasses', 'jersey', 'cape', 'astro']);
+const SHOP_BY_ID = Object.fromEntries(SHOP.map(i => [i.id, i]));
+function sticker(id, x, y, size) {
+  const it = SHOP_BY_ID[id];
+  return it ? `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle">${it.emoji}</text>` : '';
+}
+
 function avatarSVG(eq) {
-  const hat = eq.hat, eyes = eq.eyes, body = eq.body;
+  const svgItem = (slot) => (eq[slot] && SVG_ART.has(eq[slot]) ? eq[slot] : null);
+  const emojiItem = (slot) => (eq[slot] && !SVG_ART.has(eq[slot]) ? eq[slot] : null);
+  const hat = svgItem('hat'), eyes = svgItem('eyes'), body = svgItem('body');
   let back = '', overlay = '', glasses = '', hatSvg = '';
 
   if (body === 'cape') back = `<path d="M56 130 Q30 190 44 218 L100 190 L156 218 Q170 190 144 130 Q100 150 56 130 Z" fill="#e0356b"/>`;
@@ -246,8 +257,9 @@ function avatarSVG(eq) {
     <circle cx="82" cy="86" r="4" fill="#ff4d5e"/><circle cx="100" cy="86" r="4" fill="#43b8ff"/><circle cx="118" cy="86" r="4" fill="#2fd6a3"/>`;
 
   return `
-<svg viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 200 235" xmlns="http://www.w3.org/2000/svg">
   ${back}
+  ${sticker(emojiItem('ride'), 100, 232, 46)}
   <ellipse cx="78" cy="212" rx="16" ry="9" fill="#2aa392"/>
   <ellipse cx="122" cy="212" rx="16" ry="9" fill="#2aa392"/>
   <path d="M100 76 C 150 76 158 118 158 148 C 158 188 132 208 100 208 C 68 208 42 188 42 148 C 42 118 50 76 100 76 Z" fill="#3ec6b8"/>
@@ -258,6 +270,12 @@ function avatarSVG(eq) {
   <circle cx="70" cy="140" r="6" fill="#ff9cae" opacity=".7"/><circle cx="130" cy="140" r="6" fill="#ff9cae" opacity=".7"/>
   <path d="M84 148 Q100 164 116 148" stroke="#2d2a4a" stroke-width="4" fill="none" stroke-linecap="round"/>
   ${overlay}${glasses}${hatSvg}
+  ${sticker(emojiItem('body'), 100, 186, 42)}
+  ${sticker(emojiItem('eyes'), 100, 133, 38)}
+  ${sticker(emojiItem('hat'), 100, 74, 54)}
+  ${sticker(emojiItem('hand'), 176, 192, 40)}
+  ${sticker(emojiItem('pet'), 24, 218, 42)}
+  ${sticker(emojiItem('treasure'), 172, 54, 36)}
 </svg>`;
 }
 
@@ -319,10 +337,19 @@ function renderHome() {
   path.innerHTML = '';
   let currentIdx = LEVELS.findIndex(l => !(l.id in state.stars));
   if (currentIdx === -1) currentIdx = LEVELS.length;
+  // Free roam: letters (l1–l6) are sequential. Finishing them opens everything
+  // through Numbers (l10); finishing Numbers too removes all remaining locks.
+  const lettersDone = ['l1', 'l2', 'l3', 'l4', 'l5', 'l6'].every(id => id in state.stars);
+  const numbersDone = 'l10' in state.stars;
+  const numbersIdx = LEVELS.findIndex(l => l.id === 'l10');
+  const unlockedAt = (i) =>
+    i <= currentIdx ||
+    (lettersDone && numbersDone) ||
+    (lettersDone && i <= numbersIdx);
   LEVELS.forEach((lvl, i) => {
     const done = lvl.id in state.stars;
     const current = i === currentIdx;
-    const locked = i > currentIdx;
+    const locked = !unlockedAt(i);
     const node = document.createElement('div');
     const resume = state.lessonSave && state.lessonSave.levelId === lvl.id ? 'resume ' : '';
     node.className = 'lvl-node ' + (i % 2 ? 'offR ' : 'offL ') + resume + (done ? 'done' : current ? 'current' : locked ? 'locked' : '');
@@ -538,7 +565,7 @@ function renderLearn(step, stage) {
     $('#b-word').addEventListener('click', () => say([['he', it.word.plain], ['en', it.word.en]]));
     say([['en', `This is ${it.name}.`], ['he', it.nameHe], ['en', it.sound]]);
     mascotSay(`💡 ${esc(it.mnemonic)}`);
-    if (SR) wireLearnMic(it.word.plain, it.nameHe, it.word.he);
+    if (SR) wireLearnMic([it.word.plain, it.nameHe], it.word.he);
   } else {
     // vocab word or sentence
     const isSent = 'words' in it;
@@ -557,21 +584,22 @@ function renderLearn(step, stage) {
     $('#b-word').addEventListener('click', () => say([['he', it.plain]]));
     say([['he', it.plain], ['en', it.en]]);
     mascotSay(`Repeat after me: <span class="he">${it.he}</span> — "${esc(it.translit)}" means <b>${esc(it.en)}</b> ${it.emoji}`);
-    if (SR) wireLearnMic(it.plain, null, it.he);
+    if (SR) wireLearnMic(it.accept ? [...it.accept, it.plain] : [it.plain], it.he);
   }
   $('#b-next').addEventListener('click', () => finishStep(true));
 }
 
-function wireLearnMic(target, altTarget, displayHe) {
+function wireLearnMic(targets, displayHe) {
   const mic = $('#b-mic'), note = $('#heard');
   if (!mic) return;
+  const target = targets[0];
   mic.addEventListener('click', async () => {
     synth && synth.cancel();
     mic.classList.add('listening'); mic.textContent = '👂 Listening…';
     note.textContent = '';
     try {
       const alts = await listenOnce();
-      const ok = alts.length && (heMatch(alts, target) || (altTarget && heMatch(alts, altTarget)));
+      const ok = alts.length && targets.some(t => heMatch(alts, t));
       if (ok) {
         note.textContent = `Duki heard: "${alts[0]}" — perfect! +5 XP`;
         addXP(5); SFX.good(); mascotMood('happy');
@@ -810,7 +838,8 @@ function renderSpeak(step, stage) {
     try {
       const alts = await listenOnce();
       mic.classList.remove('listening'); mic.disabled = false;
-      if (alts.length && heMatch(alts, it.plain)) {
+      const speakTargets = it.accept ? [...it.accept, it.plain] : [it.plain];
+      if (alts.length && speakTargets.some(t => heMatch(alts, t))) {
         status.textContent = `Duki heard: "${alts[0]}" ✔`;
         addXP(5);
         burst('🎉', window.innerWidth / 2, window.innerHeight / 2);
@@ -1042,7 +1071,18 @@ function renderShop() {
   $('#shop-avatar').innerHTML = avatarSVG(state.eq);
   const grid = $('#shop-grid');
   grid.innerHTML = '';
-  SHOP.forEach(item => {
+  for (const [slotKey, slotLabel] of SHOP_SLOTS) {
+    const hdr = document.createElement('div');
+    hdr.className = 'shop-cat';
+    const items = SHOP.filter(x => x.slot === slotKey).sort((a, b) => a.cost - b.cost);
+    const ownedCount = items.filter(x => state.owned.includes(x.id)).length;
+    hdr.innerHTML = `${slotLabel} <span class="cat-count">${ownedCount}/${items.length}</span>`;
+    grid.appendChild(hdr);
+    items.forEach(item => renderShopItem(grid, item));
+  }
+}
+
+function renderShopItem(grid, item) {
     const owned = state.owned.includes(item.id);
     const equipped = state.eq[item.slot] === item.id;
     const el = document.createElement('div');
@@ -1069,7 +1109,6 @@ function renderShop() {
       save(); renderShop();
     });
     grid.appendChild(el);
-  });
 }
 
 // ---------- backup codes (parents' insurance against cleared storage) ----------
