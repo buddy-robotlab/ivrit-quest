@@ -105,6 +105,30 @@ const VOCAB = {
     { he: 'פָּרָה', plain: 'פרה', translit: 'pa-RA', en: 'cow', emoji: '🐮' },
     { he: 'צָב', plain: 'צב', translit: 'tsav', en: 'turtle', emoji: '🐢' },
   ],
+  science: [
+    { he: 'מַדָּע', plain: 'מדע', translit: 'ma-DA', en: 'science', emoji: '🔬' },
+    { he: 'מַדְעָן', plain: 'מדען', translit: 'mad-AN', en: 'scientist', emoji: '👩‍🔬' },
+    { he: 'נִסּוּי', plain: 'ניסוי', translit: 'ni-SUY', en: 'experiment', emoji: '🧪' },
+    { he: 'מַעְבָּדָה', plain: 'מעבדה', translit: 'ma-ba-DA', en: 'laboratory', emoji: '🥼' },
+    { he: 'מִיקְרוֹסְקוֹפ', plain: 'מיקרוסקופ', translit: 'mik-ro-SKOP', en: 'microscope', emoji: '🔬' },
+    { he: 'דִּינוֹזָאוּר', plain: 'דינוזאור', translit: 'di-no-ZA-ur', en: 'dinosaur', emoji: '🦖' },
+    { he: 'מוֹחַ', plain: 'מוח', translit: 'MO-ach', en: 'brain', emoji: '🧠' },
+    { he: 'חַשְׁמַל', plain: 'חשמל', translit: 'chash-MAL', en: 'electricity', emoji: '⚡' },
+    { he: 'מַגְנֵט', plain: 'מגנט', translit: 'mag-NET', en: 'magnet', emoji: '🧲' },
+    { he: 'רוֹבּוֹט', plain: 'רובוט', translit: 'RO-bot', en: 'robot', emoji: '🤖' },
+  ],
+  space: [
+    { he: 'חָלָל', plain: 'חלל', translit: 'cha-LAL', en: 'space', emoji: '🌌' },
+    { he: 'כּוֹכָב', plain: 'כוכב', translit: 'ko-CHAV', en: 'star', emoji: '⭐' },
+    { he: 'כּוֹכָב לֶכֶת', plain: 'כוכב לכת', translit: 'ko-CHAV LE-chet', en: 'planet', emoji: '🪐' },
+    { he: 'יָרֵחַ', plain: 'ירח', translit: 'ya-RE-ach', en: 'moon', emoji: '🌙' },
+    { he: 'שֶׁמֶשׁ', plain: 'שמש', translit: 'SHE-mesh', en: 'sun', emoji: '☀️' },
+    { he: 'כַּדּוּר הָאָרֶץ', plain: 'כדור הארץ', translit: 'ka-DUR ha-A-rets', en: 'Earth', emoji: '🌍' },
+    { he: 'אַסְטְרוֹנָאוּט', plain: 'אסטרונאוט', translit: 'as-tro-NA-ut', en: 'astronaut', emoji: '👨‍🚀' },
+    { he: 'חֲלָלִית', plain: 'חללית', translit: 'cha-la-LIT', en: 'spaceship', emoji: '🛸' },
+    { he: 'טִיל', plain: 'טיל', translit: 'til', en: 'rocket', emoji: '🚀' },
+    { he: 'חַיְזָר', plain: 'חיזר', translit: 'chai-ZAR', en: 'alien', emoji: '👽' },
+  ],
   food: [
     { he: 'לֶחֶם', plain: 'לחם', translit: 'LE-chem', en: 'bread', emoji: '🍞' },
     { he: 'מַיִם', plain: 'מים', translit: 'MA-yim', en: 'water', emoji: '💧' },
@@ -138,6 +162,18 @@ const SENTENCES_2 = [
   { he: 'אֲנִי מְדַבֵּר עִבְרִית!', plain: 'אני מדבר עברית', words: ['אני', 'מדבר', 'עברית'], translit: 'a-NEE me-da-BER eev-REET!', en: 'I speak Hebrew!', emoji: '🎉' },
 ];
 
+// Friendly Hebrew — introduce-yourself conversation (standard masculine forms)
+const SENTENCES_FRIENDLY = [
+  { he: 'מַה קוֹרְאִים לְךָ?', plain: 'מה קוראים לך', words: ['מה', 'קוראים', 'לך'], translit: 'ma kor-IM le-CHA?', en: "What's your name?", emoji: '🙋' },
+  { he: 'קוֹרְאִים לִי דָּנִי', plain: 'קוראים לי דני', words: ['קוראים', 'לי', 'דני'], translit: 'kor-IM li DA-ni', en: 'My name is Dani', emoji: '😊' },
+  { he: 'בֶּן כַּמָּה אַתָּה?', plain: 'בן כמה אתה', words: ['בן', 'כמה', 'אתה'], translit: 'ben KA-ma a-TA?', en: 'How old are you?', emoji: '🎂' },
+  { he: 'אֲנִי בֶּן עֶשֶׂר', plain: 'אני בן עשר', words: ['אני', 'בן', 'עשר'], translit: 'a-NEE ben E-ser', en: 'I am ten years old', emoji: '🔟' },
+  { he: 'אֵיפֹה אַתָּה גָּר?', plain: 'איפה אתה גר', words: ['איפה', 'אתה', 'גר'], translit: 'EY-fo a-TA gar?', en: 'Where do you live?', emoji: '🏠' },
+  { he: 'אֲנִי הוֹלֵךְ לְבֵית סֵפֶר', plain: 'אני הולך לבית ספר', words: ['אני', 'הולך', 'לבית', 'ספר'], translit: 'a-NEE ho-LECH le-VEIT SE-fer', en: 'I go to school', emoji: '🎒' },
+  { he: 'רוֹצֶה לְשַׂחֵק?', plain: 'רוצה לשחק', words: ['רוצה', 'לשחק'], translit: 'ro-TSE le-sa-CHEK?', en: 'Want to play?', emoji: '⚽' },
+  { he: 'אֲנַחְנוּ חֲבֵרִים', plain: 'אנחנו חברים', words: ['אנחנו', 'חברים'], translit: 'a-NACH-nu cha-ve-RIM', en: 'We are friends', emoji: '🤝' },
+];
+
 // Level map. kind: letters | vowels | review | vocab | sentences
 const LEVELS = [
   { id: 'l1',  title: 'First Letters',      sub: 'א ב ג ד ה',        emoji: '🌱', kind: 'letters',   items: LETTERS.slice(0, 5) },
@@ -153,8 +189,11 @@ const LEVELS = [
   { id: 'l11', title: 'Rainbow Words',      sub: 'Colors',            emoji: '🌈', kind: 'vocab',     items: VOCAB.colors },
   { id: 'l12', title: 'Animal Safari',      sub: 'Animals',           emoji: '🐫', kind: 'vocab',     items: VOCAB.animals },
   { id: 'l13', title: 'Yummy Hebrew',       sub: 'Food',              emoji: '🍕', kind: 'vocab',     items: VOCAB.food },
+  { id: 'l16', title: 'Science Lab',        sub: 'Science Hebrew',    emoji: '🔬', kind: 'vocab',     items: VOCAB.science },
+  { id: 'l17', title: 'Space Mission',      sub: 'To the stars!',     emoji: '🚀', kind: 'vocab',     items: VOCAB.space },
   { id: 'l14', title: 'First Sentences',    sub: 'Say real things!',  emoji: '💬', kind: 'sentences', items: SENTENCES_1 },
   { id: 'l15', title: 'Sentence Superstar', sub: 'Questions & more',  emoji: '🏆', kind: 'sentences', items: SENTENCES_2 },
+  { id: 'l18', title: 'Friendly Hebrew',    sub: 'Talk about YOU!',   emoji: '🤝', kind: 'sentences', items: SENTENCES_FRIENDLY },
 ];
 
 // Costume shop — slot: hat | eyes | body
