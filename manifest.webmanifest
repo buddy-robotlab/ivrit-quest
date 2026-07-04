@@ -1,0 +1,15 @@
+{
+  "name": "Ivrit Quest — Learn Hebrew!",
+  "short_name": "Ivrit Quest",
+  "description": "Learn Hebrew by talking! A voice-first adventure for kids.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a1040",
+  "theme_color": "#1a1040",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

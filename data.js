@@ -1,0 +1,190 @@
+// ============================================================
+// Ivrit Quest — curriculum data
+// ============================================================
+
+const LETTERS = [
+  { char: 'א', name: 'Alef',   nameHe: 'אָלֶף',   sound: 'Silent — it carries the vowel',        mnemonic: "Alef is a silent ninja — it makes no sound of its own, it just carries vowels!", memoji: '🥷', word: { he: 'אַבָּא', plain: 'אבא', translit: 'AH-ba', en: 'dad', emoji: '👨' } },
+  { char: 'ב', name: 'Bet',    nameHe: 'בֵּית',   sound: '"B" as in Ball',                        mnemonic: "Bet looks like a Bayit — a house with an open door. Bet = B for Bayit!", memoji: '🏠', word: { he: 'בַּיִת', plain: 'בית', translit: 'BAH-yit', en: 'house', emoji: '🏠' } },
+  { char: 'ג', name: 'Gimel',  nameHe: 'גִימֶל',  sound: '"G" as in Game',                        mnemonic: "Gimel is a Gamal — a camel striding on long legs across the desert!", memoji: '🐫', word: { he: 'גָּמָל', plain: 'גמל', translit: 'ga-MAL', en: 'camel', emoji: '🐫' } },
+  { char: 'ד', name: 'Dalet',  nameHe: 'דָלֶת',   sound: '"D" as in Door',                        mnemonic: "Dalet is a Delet — a door! See the doorframe shape? D for Door!", memoji: '🚪', word: { he: 'דָּג', plain: 'דג', translit: 'dag', en: 'fish', emoji: '🐟' } },
+  { char: 'ה', name: 'Hey',    nameHe: 'הֵא',     sound: '"H" as in Hello',                       mnemonic: "Hey! It's a window with a gap — lean out and shout 'HEY!' through it!", memoji: '👋', word: { he: 'הַר', plain: 'הר', translit: 'har', en: 'mountain', emoji: '⛰️' } },
+  { char: 'ו', name: 'Vav',    nameHe: 'וָו',     sound: '"V" as in Van',                         mnemonic: "Vav is a hook on the wall — one straight line, hang your coat on it!", memoji: '🪝', word: { he: 'וֶרֶד', plain: 'ורד', translit: 'VE-red', en: 'rose', emoji: '🌹' } },
+  { char: 'ז', name: 'Zayin',  nameHe: 'זַיִן',   sound: '"Z" as in Zebra',                       mnemonic: "Zayin looks like a sword — swish it through the air: ZZZZ!", memoji: '⚔️', word: { he: 'זֶבְּרָה', plain: 'זברה', translit: 'ZEB-ra', en: 'zebra', emoji: '🦓' } },
+  { char: 'ח', name: 'Chet',   nameHe: 'חֵית',    sound: '"CH" from the throat, like "Bach"',     mnemonic: "Chet is a doorway with NO gap. The sound comes from your throat — CHHH!", memoji: '🐸', word: { he: 'חָלָב', plain: 'חלב', translit: 'cha-LAV', en: 'milk', emoji: '🥛' } },
+  { char: 'ט', name: 'Tet',    nameHe: 'טֵית',    sound: '"T" as in Top',                         mnemonic: "Tet is a snake curling up inside a basket — sneaky T!", memoji: '🐍', word: { he: 'טֶלֶפוֹן', plain: 'טלפון', translit: 'te-le-FON', en: 'phone', emoji: '📱' } },
+  { char: 'י', name: 'Yod',    nameHe: 'יוֹד',    sound: '"Y" as in Yes',                         mnemonic: "Yod is the TINIEST letter — a little apostrophe floating in the air!", memoji: '🐜', word: { he: 'יָד', plain: 'יד', translit: 'yad', en: 'hand', emoji: '✋' } },
+  { char: 'כ', name: 'Kaf',    nameHe: 'כַּף',    sound: '"K" as in Kite',                        mnemonic: "Kaf means 'palm' — it's a hand curved to catch a ball. K for Kaf!", memoji: '🤲', word: { he: 'כֶּלֶב', plain: 'כלב', translit: 'KE-lev', en: 'dog', emoji: '🐶' } },
+  { char: 'ל', name: 'Lamed',  nameHe: 'לָמֶד',   sound: '"L" as in Lion',                        mnemonic: "Lamed is the TALLEST letter — a lighthouse towering over the alphabet!", memoji: '🗼', word: { he: 'לֵב', plain: 'לב', translit: 'lev', en: 'heart', emoji: '❤️' } },
+  { char: 'מ', name: 'Mem',    nameHe: 'מֵם',     sound: '"M" as in Moon',                        mnemonic: "Mem is a wave in the sea — Mayim means water! M for Mayim!", memoji: '🌊', word: { he: 'מַיִם', plain: 'מים', translit: 'MA-yim', en: 'water', emoji: '💧' } },
+  { char: 'נ', name: 'Nun',    nameHe: 'נוּן',    sound: '"N" as in Night',                       mnemonic: "Nun is a little candle flame bending in the breeze!", memoji: '🕯️', word: { he: 'נֵר', plain: 'נר', translit: 'ner', en: 'candle', emoji: '🕯️' } },
+  { char: 'ס', name: 'Samech', nameHe: 'סָמֶך',   sound: '"S" as in Sun',                         mnemonic: "Samech is a full circle — like a donut. S for Sufganiya (donut)!", memoji: '🍩', word: { he: 'סֵפֶר', plain: 'ספר', translit: 'SE-fer', en: 'book', emoji: '📖' } },
+  { char: 'ע', name: 'Ayin',   nameHe: 'עַיִן',   sound: 'Silent — a deep quiet letter',          mnemonic: "Ayin means 'eye' — it watches everything but says nothing!", memoji: '👁️', word: { he: 'עֵץ', plain: 'עץ', translit: 'ets', en: 'tree', emoji: '🌳' } },
+  { char: 'פ', name: 'Pey',    nameHe: 'פֵּא',    sound: '"P" as in Pizza',                       mnemonic: "Pey means 'mouth' — look, there's a little mouth hiding inside the letter!", memoji: '👄', word: { he: 'פִּיל', plain: 'פיל', translit: 'peel', en: 'elephant', emoji: '🐘' } },
+  { char: 'צ', name: 'Tsadi',  nameHe: 'צַדִי',   sound: '"TS" as in piTSa',                      mnemonic: "Tsadi says TS — like the middle of 'pizza'! piTSa!", memoji: '🍕', word: { he: 'צָב', plain: 'צב', translit: 'tsav', en: 'turtle', emoji: '🐢' } },
+  { char: 'ק', name: 'Kof',    nameHe: 'קוֹף',    sound: '"K" as in King',                        mnemonic: "Kof means 'monkey' — see its long tail hanging down below the line?", memoji: '🐒', word: { he: 'קוֹף', plain: 'קוף', translit: 'kof', en: 'monkey', emoji: '🐒' } },
+  { char: 'ר', name: 'Resh',   nameHe: 'רֵישׁ',   sound: '"R" as in Run',                         mnemonic: "Resh is a head looking left — Rosh means head! R for Rosh!", memoji: '🙂', word: { he: 'רַכֶּבֶת', plain: 'רכבת', translit: 'ra-KE-vet', en: 'train', emoji: '🚂' } },
+  { char: 'ש', name: 'Shin',   nameHe: 'שִׁין',   sound: '"SH" as in Shhh!',                      mnemonic: "Shin has three flames rising up — fire! SHHH, don't wake the dragon!", memoji: '🔥', word: { he: 'שֶׁמֶשׁ', plain: 'שמש', translit: 'SHE-mesh', en: 'sun', emoji: '☀️' } },
+  { char: 'ת', name: 'Tav',    nameHe: 'תָו',     sound: '"T" as in Taco',                        mnemonic: "Tav is a dancer with one foot kicked out — Ta-da! T for Ta-da!", memoji: '💃', word: { he: 'תַּפּוּחַ', plain: 'תפוח', translit: 'ta-PU-ach', en: 'apple', emoji: '🍎' } },
+];
+
+// Final (sofit) forms — letters that change shape at the END of a word
+const FINALS = [
+  { char: 'ך', name: 'Final Chaf',  nameHe: 'כַף סוֹפִית',  sound: 'Same as כ — at the end of a word', mnemonic: "When Kaf comes LAST in a word it stretches its leg down: ך. Same sound, long legs!", memoji: '🦵', word: { he: 'מֶלֶךְ', plain: 'מלך', translit: 'ME-lech', en: 'king', emoji: '🤴' } },
+  { char: 'ם', name: 'Final Mem',   nameHe: 'מֵם סוֹפִית',  sound: 'Same as מ — at the end of a word', mnemonic: "At the end of a word, Mem closes up into a box: ם. Shalom ends with one!", memoji: '📦', word: { he: 'שָׁלוֹם', plain: 'שלום', translit: 'sha-LOM', en: 'hello / peace', emoji: '✌️' } },
+  { char: 'ן', name: 'Final Nun',   nameHe: 'נוּן סוֹפִית', sound: 'Same as נ — at the end of a word', mnemonic: "Final Nun stands up straight and slides below the line: ן. A tall candle!", memoji: '🕯️', word: { he: 'בֵּן', plain: 'בן', translit: 'ben', en: 'son / boy', emoji: '👦' } },
+  { char: 'ף', name: 'Final Pey',   nameHe: 'פֵּא סוֹפִית', sound: 'Same as פ — at the end of a word', mnemonic: "Final Pey lets its tail hang down: ף. Kof (monkey) ends with one!", memoji: '🐒', word: { he: 'עוֹף', plain: 'עוף', translit: 'of', en: 'chicken', emoji: '🐔' } },
+  { char: 'ץ', name: 'Final Tsadi', nameHe: 'צַדִי סוֹפִית', sound: 'Same as צ — at the end of a word', mnemonic: "Final Tsadi stretches down: ץ. Ets (tree) ends with one — roots going down!", memoji: '🌳', word: { he: 'עֵץ', plain: 'עץ', translit: 'ets', en: 'tree', emoji: '🌳' } },
+];
+
+// Vowels (nikud) — shown on the letter Bet
+const VOWELS = [
+  { char: 'בַ',  name: 'Patach',  nameHe: 'פַּתָח',  sound: '"AH" as in father',  mnemonic: "Patach is a flat line UNDER the letter — open wide and say AHHH!", memoji: '😮', word: { he: 'אַבָּא', plain: 'אבא', translit: 'AH-ba', en: 'dad', emoji: '👨' } },
+  { char: 'בָ',  name: 'Kamatz',  nameHe: 'קָמָץ',   sound: '"AH" as in father',  mnemonic: "Kamatz is a tiny T under the letter — it ALSO says AH. Two vowels, one sound!", memoji: '👨‍🦱', word: { he: 'שָׁלוֹם', plain: 'שלום', translit: 'sha-LOM', en: 'hello', emoji: '✌️' } },
+  { char: 'בִ',  name: 'Chirik',  nameHe: 'חִירִיק', sound: '"EE" as in bee',     mnemonic: "Chirik is one tiny dot — tiny dot, tiny sound: EEEE!", memoji: '🐝', word: { he: 'פִּיל', plain: 'פיל', translit: 'peel', en: 'elephant', emoji: '🐘' } },
+  { char: 'בֶ',  name: 'Segol',   nameHe: 'סֶגוֹל',  sound: '"EH" as in egg',     mnemonic: "Segol is three dots in a triangle — three eggs in a nest saying EH!", memoji: '🥚', word: { he: 'דֶגֶל', plain: 'דגל', translit: 'DE-gel', en: 'flag', emoji: '🇮🇱' } },
+  { char: 'בוֹ', name: 'Cholam',  nameHe: 'חוֹלָם',  sound: '"OH" as in go',      mnemonic: "Cholam is a dot floating ON TOP — a balloon going OH so high!", memoji: '🎈', word: { he: 'בּוֹקֶר', plain: 'בוקר', translit: 'BO-ker', en: 'morning', emoji: '🌅' } },
+  { char: 'בוּ', name: 'Shuruk',  nameHe: 'שׁוּרוּק', sound: '"OO" as in moon',    mnemonic: "Shuruk is a Vav with a dot in its middle — a rocket saying OOOO to the moon!", memoji: '🚀', word: { he: 'תַּפּוּחַ', plain: 'תפוח', translit: 'ta-PU-ach', en: 'apple', emoji: '🍎' } },
+];
+
+// Vocabulary sets — { he (with nikud), plain (no nikud, for TTS + speech matching), translit, en, emoji }
+const VOCAB = {
+  greetings: [
+    { he: 'שָׁלוֹם', plain: 'שלום', translit: 'sha-LOM', en: 'hello / peace', emoji: '✌️' },
+    { he: 'בּוֹקֶר טוֹב', plain: 'בוקר טוב', translit: 'BO-ker tov', en: 'good morning', emoji: '🌅' },
+    { he: 'לַיְלָה טוֹב', plain: 'לילה טוב', translit: 'LY-la tov', en: 'good night', emoji: '🌙' },
+    { he: 'תּוֹדָה', plain: 'תודה', translit: 'to-DA', en: 'thank you', emoji: '🙏' },
+    { he: 'בְּבַקָּשָׁה', plain: 'בבקשה', translit: 'be-va-ka-SHA', en: 'please', emoji: '🤝' },
+    { he: 'כֵּן', plain: 'כן', translit: 'ken', en: 'yes', emoji: '✅' },
+    { he: 'לֹא', plain: 'לא', translit: 'lo', en: 'no', emoji: '❌' },
+    { he: 'סְלִיחָה', plain: 'סליחה', translit: 'sli-CHA', en: 'sorry / excuse me', emoji: '😅' },
+    { he: 'מַה נִשְׁמָע?', plain: 'מה נשמע', translit: 'ma nish-MA', en: "what's up?", emoji: '🤙' },
+    { he: 'לְהִתְרָאוֹת', plain: 'להתראות', translit: 'le-hit-ra-OT', en: 'see you later', emoji: '👋' },
+  ],
+  family: [
+    { he: 'אַבָּא', plain: 'אבא', translit: 'AH-ba', en: 'dad', emoji: '👨' },
+    { he: 'אִמָא', plain: 'אמא', translit: 'EE-ma', en: 'mom', emoji: '👩' },
+    { he: 'אָח', plain: 'אח', translit: 'ach', en: 'brother', emoji: '👦' },
+    { he: 'אָחוֹת', plain: 'אחות', translit: 'a-CHOT', en: 'sister', emoji: '👧' },
+    { he: 'סַבָּא', plain: 'סבא', translit: 'SA-ba', en: 'grandpa', emoji: '👴' },
+    { he: 'סַבְתָא', plain: 'סבתא', translit: 'SAV-ta', en: 'grandma', emoji: '👵' },
+    { he: 'מִשְׁפָּחָה', plain: 'משפחה', translit: 'mish-pa-CHA', en: 'family', emoji: '👨‍👩‍👧‍👦' },
+    { he: 'חָבֵר', plain: 'חבר', translit: 'cha-VER', en: 'friend', emoji: '🧑‍🤝‍🧑' },
+  ],
+  numbers: [
+    { he: 'אַחַת', plain: 'אחת', translit: 'a-CHAT', en: 'one', emoji: '1️⃣' },
+    { he: 'שְׁתַּיִם', plain: 'שתיים', translit: 'SHTA-yim', en: 'two', emoji: '2️⃣' },
+    { he: 'שָׁלוֹשׁ', plain: 'שלוש', translit: 'sha-LOSH', en: 'three', emoji: '3️⃣' },
+    { he: 'אַרְבַּע', plain: 'ארבע', translit: 'AR-ba', en: 'four', emoji: '4️⃣' },
+    { he: 'חָמֵשׁ', plain: 'חמש', translit: 'cha-MESH', en: 'five', emoji: '5️⃣' },
+    { he: 'שֵׁשׁ', plain: 'שש', translit: 'shesh', en: 'six', emoji: '6️⃣' },
+    { he: 'שֶׁבַע', plain: 'שבע', translit: 'SHE-va', en: 'seven', emoji: '7️⃣' },
+    { he: 'שְׁמוֹנֶה', plain: 'שמונה', translit: 'shmo-NE', en: 'eight', emoji: '8️⃣' },
+    { he: 'תֵּשַׁע', plain: 'תשע', translit: 'TE-sha', en: 'nine', emoji: '9️⃣' },
+    { he: 'עֶשֶׂר', plain: 'עשר', translit: 'E-ser', en: 'ten', emoji: '🔟' },
+  ],
+  colors: [
+    { he: 'אָדוֹם', plain: 'אדום', translit: 'a-DOM', en: 'red', emoji: '🔴' },
+    { he: 'כָּחוֹל', plain: 'כחול', translit: 'ka-CHOL', en: 'blue', emoji: '🔵' },
+    { he: 'יָרוֹק', plain: 'ירוק', translit: 'ya-ROK', en: 'green', emoji: '🟢' },
+    { he: 'צָהוֹב', plain: 'צהוב', translit: 'tsa-HOV', en: 'yellow', emoji: '🟡' },
+    { he: 'כָּתוֹם', plain: 'כתום', translit: 'ka-TOM', en: 'orange', emoji: '🟠' },
+    { he: 'סָגוֹל', plain: 'סגול', translit: 'sa-GOL', en: 'purple', emoji: '🟣' },
+    { he: 'וָרוֹד', plain: 'ורוד', translit: 'va-ROD', en: 'pink', emoji: '🌸' },
+    { he: 'שָׁחוֹר', plain: 'שחור', translit: 'sha-CHOR', en: 'black', emoji: '⚫' },
+    { he: 'לָבָן', plain: 'לבן', translit: 'la-VAN', en: 'white', emoji: '⚪' },
+  ],
+  animals: [
+    { he: 'כֶּלֶב', plain: 'כלב', translit: 'KE-lev', en: 'dog', emoji: '🐶' },
+    { he: 'חָתוּל', plain: 'חתול', translit: 'cha-TUL', en: 'cat', emoji: '🐱' },
+    { he: 'סוּס', plain: 'סוס', translit: 'sus', en: 'horse', emoji: '🐴' },
+    { he: 'דָּג', plain: 'דג', translit: 'dag', en: 'fish', emoji: '🐟' },
+    { he: 'צִפּוֹר', plain: 'ציפור', translit: 'tsi-POR', en: 'bird', emoji: '🐦' },
+    { he: 'פִּיל', plain: 'פיל', translit: 'peel', en: 'elephant', emoji: '🐘' },
+    { he: 'אַרְיֵה', plain: 'אריה', translit: 'ar-YE', en: 'lion', emoji: '🦁' },
+    { he: 'קוֹף', plain: 'קוף', translit: 'kof', en: 'monkey', emoji: '🐒' },
+    { he: 'פָּרָה', plain: 'פרה', translit: 'pa-RA', en: 'cow', emoji: '🐮' },
+    { he: 'צָב', plain: 'צב', translit: 'tsav', en: 'turtle', emoji: '🐢' },
+  ],
+  food: [
+    { he: 'לֶחֶם', plain: 'לחם', translit: 'LE-chem', en: 'bread', emoji: '🍞' },
+    { he: 'מַיִם', plain: 'מים', translit: 'MA-yim', en: 'water', emoji: '💧' },
+    { he: 'תַּפּוּחַ', plain: 'תפוח', translit: 'ta-PU-ach', en: 'apple', emoji: '🍎' },
+    { he: 'בָּנָנָה', plain: 'בננה', translit: 'ba-NA-na', en: 'banana', emoji: '🍌' },
+    { he: 'גְּלִידָה', plain: 'גלידה', translit: 'GLEE-da', en: 'ice cream', emoji: '🍦' },
+    { he: 'פִּיצָה', plain: 'פיצה', translit: 'PEE-tsa', en: 'pizza', emoji: '🍕' },
+    { he: 'חָלָב', plain: 'חלב', translit: 'cha-LAV', en: 'milk', emoji: '🥛' },
+    { he: 'עוּגָה', plain: 'עוגה', translit: 'u-GA', en: 'cake', emoji: '🍰' },
+    { he: 'שׁוֹקוֹלָד', plain: 'שוקולד', translit: 'sho-ko-LAD', en: 'chocolate', emoji: '🍫' },
+    { he: 'פָלָאפֶל', plain: 'פלאפל', translit: 'fa-LA-fel', en: 'falafel', emoji: '🧆' },
+  ],
+};
+
+// Sentences — words[] are the plain-Hebrew tiles for the "build it" game
+const SENTENCES_1 = [
+  { he: 'אֲנִי רוֹצֶה פִּיצָה', plain: 'אני רוצה פיצה', words: ['אני', 'רוצה', 'פיצה'], translit: 'a-NEE ro-TSE PEE-tsa', en: 'I want pizza', emoji: '🍕' },
+  { he: 'זֶה כֶּלֶב', plain: 'זה כלב', words: ['זה', 'כלב'], translit: 'ze KE-lev', en: 'This is a dog', emoji: '🐶' },
+  { he: 'אֲנִי אוֹהֵב גְּלִידָה', plain: 'אני אוהב גלידה', words: ['אני', 'אוהב', 'גלידה'], translit: 'a-NEE o-HEV GLEE-da', en: 'I love ice cream', emoji: '🍦' },
+  { he: 'יֵשׁ לִי חָבֵר', plain: 'יש לי חבר', words: ['יש', 'לי', 'חבר'], translit: 'yesh li cha-VER', en: 'I have a friend', emoji: '🧑‍🤝‍🧑' },
+  { he: 'אִמָא בַּבַּיִת', plain: 'אמא בבית', words: ['אמא', 'בבית'], translit: 'EE-ma ba-BA-yit', en: 'Mom is at home', emoji: '🏠' },
+  { he: 'הַכֶּלֶב גָּדוֹל', plain: 'הכלב גדול', words: ['הכלב', 'גדול'], translit: 'ha-KE-lev ga-DOL', en: 'The dog is big', emoji: '🐕' },
+];
+
+const SENTENCES_2 = [
+  { he: 'מַה זֶה?', plain: 'מה זה', words: ['מה', 'זה'], translit: 'ma ze?', en: 'What is this?', emoji: '❓' },
+  { he: 'אֵיפֹה הֶחָתוּל?', plain: 'איפה החתול', words: ['איפה', 'החתול'], translit: 'EY-fo he-cha-TUL?', en: 'Where is the cat?', emoji: '🐱' },
+  { he: 'אֲנִי רָעֵב', plain: 'אני רעב', words: ['אני', 'רעב'], translit: 'a-NEE ra-EV', en: 'I am hungry', emoji: '😋' },
+  { he: 'בּוֹקֶר טוֹב אַבָּא', plain: 'בוקר טוב אבא', words: ['בוקר', 'טוב', 'אבא'], translit: 'BO-ker tov AH-ba', en: 'Good morning, Dad', emoji: '🌅' },
+  { he: 'אֲנִי רוֹצֶה מַיִם בְּבַקָּשָׁה', plain: 'אני רוצה מים בבקשה', words: ['אני', 'רוצה', 'מים', 'בבקשה'], translit: 'a-NEE ro-TSE MA-yim be-va-ka-SHA', en: 'I want water, please', emoji: '💧' },
+  { he: 'אֲנִי מְדַבֵּר עִבְרִית!', plain: 'אני מדבר עברית', words: ['אני', 'מדבר', 'עברית'], translit: 'a-NEE me-da-BER eev-REET!', en: 'I speak Hebrew!', emoji: '🎉' },
+];
+
+// Level map. kind: letters | vowels | review | vocab | sentences
+const LEVELS = [
+  { id: 'l1',  title: 'First Letters',      sub: 'א ב ג ד ה',        emoji: '🌱', kind: 'letters',   items: LETTERS.slice(0, 5) },
+  { id: 'l2',  title: 'More Letters',       sub: 'ו ז ח ט י',        emoji: '⭐', kind: 'letters',   items: LETTERS.slice(5, 10) },
+  { id: 'l3',  title: 'Power Letters',      sub: 'כ ל מ נ ס',        emoji: '🚀', kind: 'letters',   items: LETTERS.slice(10, 15) },
+  { id: 'l4',  title: 'Fire Letters',       sub: 'ע פ צ ק ר',        emoji: '🔥', kind: 'letters',   items: LETTERS.slice(15, 20) },
+  { id: 'l5',  title: 'Finish Line Letters', sub: 'ש ת + sofit forms', emoji: '🏁', kind: 'letters',  items: [...LETTERS.slice(20, 22), ...FINALS] },
+  { id: 'l6',  title: 'Alef-Bet Boss',      sub: 'All 22 letters!',   emoji: '👑', kind: 'review',    items: LETTERS },
+  { id: 'l7',  title: 'Vowel Power',        sub: 'Nikud — the dots!', emoji: '🎵', kind: 'vowels',    items: VOWELS },
+  { id: 'l8',  title: 'Hello Hebrew!',      sub: 'Greetings',         emoji: '👋', kind: 'vocab',     items: VOCAB.greetings },
+  { id: 'l9',  title: 'My Family',          sub: 'Mishpacha',         emoji: '👨‍👩‍👧‍👦', kind: 'vocab', items: VOCAB.family },
+  { id: 'l10', title: 'Count to 10',        sub: 'Numbers',           emoji: '🔢', kind: 'vocab',     items: VOCAB.numbers },
+  { id: 'l11', title: 'Rainbow Words',      sub: 'Colors',            emoji: '🌈', kind: 'vocab',     items: VOCAB.colors },
+  { id: 'l12', title: 'Animal Safari',      sub: 'Animals',           emoji: '🐫', kind: 'vocab',     items: VOCAB.animals },
+  { id: 'l13', title: 'Yummy Hebrew',       sub: 'Food',              emoji: '🍕', kind: 'vocab',     items: VOCAB.food },
+  { id: 'l14', title: 'First Sentences',    sub: 'Say real things!',  emoji: '💬', kind: 'sentences', items: SENTENCES_1 },
+  { id: 'l15', title: 'Sentence Superstar', sub: 'Questions & more',  emoji: '🏆', kind: 'sentences', items: SENTENCES_2 },
+];
+
+// Costume shop — slot: hat | eyes | body
+const SHOP = [
+  { id: 'cap',      name: 'Cool Cap',        emoji: '🧢', cost: 25, slot: 'hat' },
+  { id: 'tembel',   name: 'Tembel Hat',      emoji: '👒', cost: 30, slot: 'hat' },
+  { id: 'wizard',   name: 'Wizard Hat',      emoji: '🧙', cost: 50, slot: 'hat' },
+  { id: 'crown',    name: 'Royal Crown',     emoji: '👑', cost: 60, slot: 'hat' },
+  { id: 'shades',   name: 'Sunglasses',      emoji: '😎', cost: 30, slot: 'eyes' },
+  { id: 'starglasses', name: 'Star Glasses', emoji: '🤩', cost: 40, slot: 'eyes' },
+  { id: 'jersey',   name: 'Soccer Jersey',   emoji: '⚽', cost: 40, slot: 'body' },
+  { id: 'cape',     name: 'Hero Cape',       emoji: '🦸', cost: 50, slot: 'body' },
+  { id: 'astro',    name: 'Space Suit',      emoji: '👨‍🚀', cost: 70, slot: 'body' },
+];
+
+const RANKS = [
+  { xp: 0,   name: 'Newbie',      emoji: '🐣' },
+  { xp: 100, name: 'Explorer',    emoji: '🧭' },
+  { xp: 250, name: 'Rising Star', emoji: '🌟' },
+  { xp: 500, name: 'Champion',    emoji: '🏅' },
+  { xp: 900, name: 'Hebrew Hero', emoji: '🦸' },
+];
+
+const HOME_TIPS = [
+  'Hebrew is read from RIGHT to LEFT ← that way!',
+  'Hebrew has 22 letters — and 5 of them change shape at the end of a word!',
+  '"Shalom" means hello, goodbye AND peace. Three words in one!',
+  'Hebrew is over 3,000 years old — you are learning an ancient superpower!',
+  'The word "abba" (dad) is one of the oldest words still used today!',
+  'Tap the 🔊 button any time to hear a word again.',
+  'Say the words OUT LOUD — your mouth remembers better than your eyes!',
+  'Practice a little every day — streaks beat marathons!',
+];

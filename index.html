@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1040">
+  <title>Ivrit Quest — Learn Hebrew!</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- SPLASH -->
+  <section id="splash" class="screen active">
+    <div id="splash-mascot"></div>
+    <h1>Ivrit Quest</h1>
+    <div class="he-title">עִבְרִית!</div>
+    <p>Learn Hebrew by <b>talking</b>! Meet Duki, earn stars and coins, and unlock awesome costumes for your avatar. 🎉</p>
+    <button id="start-btn" class="btn btn-primary">▶ Start the Adventure</button>
+    <p style="font-size:14px;opacity:.7">🔊 Turn your sound ON &nbsp;·&nbsp; 🎤 Allow the microphone when asked</p>
+  </section>
+
+  <!-- HOME / LEVEL MAP -->
+  <section id="home" class="screen">
+    <div class="hud">
+      <span class="pill"><span class="em">⭐</span><span id="hud-stars">0</span></span>
+      <span class="pill"><span class="em">⚡</span><span id="hud-xp">0</span> XP</span>
+      <span class="spacer"></span>
+      <span class="pill"><span class="em">🪙</span><span id="hud-coins">0</span></span>
+      <button id="shop-btn" class="btn btn-ghost">🎭 Costumes</button>
+    </div>
+    <div id="home-head">
+      <div id="home-avatar"></div>
+      <div class="who">
+        <div class="rank" id="rank-line">🐣 Newbie</div>
+        <div class="xpline" id="xp-line"></div>
+        <div class="xpbar"><div id="xp-fill"></div></div>
+      </div>
+    </div>
+    <div class="tipbox"><span style="font-size:24px">💡</span><span id="tip-text"></span></div>
+    <div class="scroll"><div id="path"></div></div>
+  </section>
+
+  <!-- LESSON -->
+  <section id="lesson" class="screen">
+    <div id="lesson-top">
+      <button id="quit-btn" class="icon-btn">✕</button>
+      <div class="progress"><div id="lesson-progress"></div></div>
+      <span id="combo-pill" class="pill">🔥 <span id="combo-n"></span></span>
+    </div>
+    <div id="stage"></div>
+    <div id="feedback">
+      <div class="fb-emoji"></div>
+      <div>
+        <div class="fb-title"></div>
+        <div class="fb-sub"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="screen"></section>
+
+  <!-- SHOP -->
+  <section id="shop" class="screen">
+    <div class="hud">
+      <button id="shop-back" class="icon-btn">←</button>
+      <span class="spacer"></span>
+      <span class="pill"><span class="em">🪙</span><span id="shop-coins">0</span></span>
+    </div>
+    <div class="scroll">
+      <div id="shop-avatar-wrap"><div id="shop-avatar"></div></div>
+      <h2>Costume Shop</h2>
+      <div class="shop-sub">Win coins in lessons → dress up your hero! Tap to buy or wear.</div>
+      <div class="shop-grid" id="shop-grid"></div>
+    </div>
+  </section>
+
+  <!-- MASCOT (global) -->
+  <div id="mascot"></div>
+  <div id="bubble"></div>
+  <div id="fx-layer"></div>
+
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
