@@ -45,11 +45,32 @@ const SFX = {
 // ---------- speech: TTS + recognition ----------
 const synth = window.speechSynthesis;
 let heVoice = null, enVoice = null;
+// Prefer the most natural voice installed: Premium > Enhanced > plain.
+// (On iPad, better voices appear after downloading them in
+//  Settings → Accessibility → Spoken Content → Voices.)
+function voiceScore(v, wantLang) {
+  const lang = (v.lang || '').toLowerCase().replace('_', '-');
+  const name = (v.name || '').toLowerCase();
+  let s = 0;
+  if (lang.startsWith(wantLang)) s += 10; else return -1;
+  if (wantLang === 'en' && lang === 'en-us') s += 2;
+  if (name.includes('premium')) s += 6;
+  else if (name.includes('enhanced')) s += 4;
+  if (/natural|neural|siri/.test(name)) s += 5;
+  if (name.includes('compact')) s -= 2;
+  if (v.localService) s += 1;
+  return s;
+}
+function bestVoice(vs, wantLang) {
+  return vs.map(v => [voiceScore(v, wantLang), v])
+    .filter(([s]) => s >= 0)
+    .sort((a, b) => b[0] - a[0])
+    .map(([, v]) => v)[0] || null;
+}
 function pickVoices() {
   const vs = synth ? synth.getVoices() : [];
-  heVoice = vs.find(v => v.lang && v.lang.toLowerCase().startsWith('he')) ||
-            vs.find(v => /hebrew|carmit/i.test(v.name)) || null;
-  enVoice = vs.find(v => v.lang === 'en-US') || vs.find(v => v.lang && v.lang.startsWith('en')) || null;
+  heVoice = bestVoice(vs, 'he') || vs.find(v => /hebrew|carmit/i.test(v.name)) || null;
+  enVoice = bestVoice(vs, 'en');
 }
 if (synth) { pickVoices(); synth.onvoiceschanged = pickVoices; }
 
