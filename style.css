@@ -348,6 +348,7 @@ html, body {
   margin-top: 14px; padding-left: 4px; display: flex; align-items: baseline; gap: 10px;
 }
 .shop-cat:first-child { margin-top: 0; }
+.nudge-btn { border-color: var(--sun); color: var(--sun); animation: pulse 2s ease-in-out infinite; }
 .shop-cat .cat-count { font-size: 14px; color: #cfc4f2; font-weight: normal; }
 
 /* ---------- mascot ---------- */

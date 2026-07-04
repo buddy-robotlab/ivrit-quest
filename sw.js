@@ -1,5 +1,5 @@
 // Ivrit Quest — service worker: cache everything, work fully offline
-const CACHE = 'ivrit-quest-v8';
+const CACHE = 'ivrit-quest-v9';
 const ASSETS = [
   './',
   './index.html',

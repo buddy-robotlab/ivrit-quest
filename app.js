@@ -919,6 +919,20 @@ function renderBuild(step, stage) {
   audio();
 }
 
+// ---------- backup nudge: every ~5 completed levels, one gentle reminder ----------
+const NUDGE_EVERY = 5;
+const completedCount = () => Object.keys(state.stars).length;
+function nudgeHtml() {
+  if (completedCount() - (state.lastNudgeLevels || 0) < NUDGE_EVERY) return '';
+  state.lastNudgeLevels = completedCount();
+  save();
+  return `<button class="btn btn-ghost nudge-btn" id="nudge-backup">🔑 Lots of new progress — tap to save your backup code!</button>`;
+}
+function wireNudge() {
+  const b = $('#nudge-backup');
+  if (b) b.addEventListener('click', () => { SFX.click(); showBackup(); });
+}
+
 // ---------- results ----------
 function finishLevel() {
   const L = lesson;
@@ -943,10 +957,12 @@ function finishLevel() {
       <div class="gain">🎯 ${Math.round(acc * 100)}%<span>accuracy</span></div>
     </div>
     <button class="btn btn-primary" id="res-shop" style="margin-top:14px">🎭 Reward time — Costume Shop!</button>
-    <button class="btn btn-ghost" id="res-home">🗺 Back to the map</button>`;
+    <button class="btn btn-ghost" id="res-home">🗺 Back to the map</button>
+    ${nudgeHtml()}`;
   show('results');
   $('#res-shop').addEventListener('click', () => { SFX.click(); renderShop(); });
   $('#res-home').addEventListener('click', () => { SFX.click(); renderHome(); });
+  wireNudge();
 
   SFX.fanfare();
   confetti(stars * 40);
@@ -1041,8 +1057,10 @@ function finishCheck() {
         <div class="gain">🪙 +20<span>bonus coins</span></div>
       </div>
       <button class="btn btn-primary" id="check-start-target" style="margin-top:14px">${target.emoji} Play ${esc(target.title)}!</button>
-      <button class="btn btn-ghost" id="check-map">🗺 Back to the map</button>`;
+      <button class="btn btn-ghost" id="check-map">🗺 Back to the map</button>
+      ${nudgeHtml()}`;
     show('results');
+    wireNudge();
     $('#check-start-target').addEventListener('click', () => { SFX.click(); startLevel(target); });
     $('#check-map').addEventListener('click', () => { SFX.click(); renderHome(); });
     SFX.fanfare(); confetti(120); setTimeout(() => SFX.coin(), 700);
@@ -1119,6 +1137,8 @@ function decodeSave(code) {
   return s;
 }
 function showBackup() {
+  state.lastNudgeLevels = Object.keys(state.stars).length; // any backup visit resets the nudge clock
+  save();
   const old = $('.modal-overlay'); if (old) old.remove();
   const ov = document.createElement('div');
   ov.className = 'modal-overlay';
