@@ -68,14 +68,23 @@ function speakOne(text, lang, rate) {
   });
 }
 let sayToken = 0;
-async function say(parts) { // parts: [['en','Listen!'],['he','שלום']]
+async function say(parts) { // parts: [['en','Listen!'],['he','שלום']] or ['he','שלום',0.55] for slow
   if (!synth) return;
   const my = ++sayToken;
   synth.cancel();
-  for (const [lang, text] of parts) {
+  for (const [lang, text, rate] of parts) {
     if (my !== sayToken) return;
-    await speakOne(text, lang);
+    await speakOne(text, lang, rate);
   }
+}
+
+// friendly explanation for recognition failures (kid-appropriate)
+function micErrorText(e) {
+  const msg = String((e && e.message) || e);
+  if (/not-allowed|service-not-allowed/.test(msg)) return '🎤 The microphone is blocked — ask a grown-up to allow it in Settings → Safari → Microphone.';
+  if (/no-speech|aborted/.test(msg)) return "🙉 Duki couldn't hear anything — get closer and speak up like a lion! 🦁";
+  if (/audio-capture/.test(msg)) return '🎤 No microphone found — is one connected?';
+  return '🎤 Mic hiccup — take a breath and try again!';
 }
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -506,7 +515,7 @@ function renderLearn(step, stage) {
     $('#b-word').addEventListener('click', () => say([['he', it.word.plain], ['en', it.word.en]]));
     say([['en', `This is ${it.name}.`], ['he', it.nameHe], ['en', it.sound]]);
     mascotSay(`💡 ${esc(it.mnemonic)}`);
-    if (SR) wireLearnMic(it.word.plain, it.nameHe);
+    if (SR) wireLearnMic(it.word.plain, it.nameHe, it.word.he);
   } else {
     // vocab word or sentence
     const isSent = 'words' in it;
@@ -525,12 +534,12 @@ function renderLearn(step, stage) {
     $('#b-word').addEventListener('click', () => say([['he', it.plain]]));
     say([['he', it.plain], ['en', it.en]]);
     mascotSay(`Repeat after me: <span class="he">${it.he}</span> — "${esc(it.translit)}" means <b>${esc(it.en)}</b> ${it.emoji}`);
-    if (SR) wireLearnMic(it.plain);
+    if (SR) wireLearnMic(it.plain, null, it.he);
   }
   $('#b-next').addEventListener('click', () => finishStep(true));
 }
 
-function wireLearnMic(target, altTarget) {
+function wireLearnMic(target, altTarget, displayHe) {
   const mic = $('#b-mic'), note = $('#heard');
   if (!mic) return;
   mic.addEventListener('click', async () => {
@@ -545,13 +554,17 @@ function wireLearnMic(target, altTarget) {
         addXP(5); SFX.good(); mascotMood('happy');
         mascotSay('🎉 Wow, great pronunciation!', [['en', 'Great pronunciation!']]);
       } else if (alts.length) {
-        note.textContent = `Duki heard: "${alts[0]}" — nice try, say it again!`;
-        mascotMood('sad', 600);
+        note.textContent = `Duki heard: "${alts[0]}" — not quite!`;
+        SFX.bad(); mascotMood('sad', 900);
+        mascotSay(`🤔 I heard <b>"${esc(alts[0])}"</b> — we want <span class="he">${displayHe || target}</span>. Listen sloooowly, then try again!`,
+          [['en', 'Not quite! Listen closely:'], ['he', target, 0.55], ['en', 'Now you try!']]);
       } else {
-        note.textContent = "Duki couldn't hear you — try speaking louder!";
+        SFX.bad();
+        note.textContent = "🙉 Duki couldn't hear you — speak up like a lion! 🦁";
+        say([['en', "I couldn't hear you. Say it loud like this:"], ['he', target, 0.7]]);
       }
     } catch (e) {
-      note.textContent = '🎤 Mic not available — no worries, keep going!';
+      note.textContent = micErrorText(e);
     }
     mic.classList.remove('listening'); mic.textContent = '🎤 Say it!';
   });
@@ -781,17 +794,22 @@ function renderSpeak(step, stage) {
         finishStep(true, `You SAID it! <span class="he">${it.he}</span> +bonus XP`);
       } else {
         attempts++;
-        if (alts.length) status.textContent = `Duki heard: "${alts[0]}" — almost! Try again 💪`;
-        else status.textContent = "Couldn't hear you — speak up like a lion! 🦁";
-        if (attempts >= 2) {
-          status.textContent += ' (One more try, then we move on!)';
-          if (attempts >= 3) finishStep(true, 'Great effort! Speaking takes practice 💪');
+        SFX.bad(); mascotMood('sad', 900);
+        if (attempts >= 3) {
+          finishStep(true, 'Great effort! Speaking takes practice 💪');
+          return;
         }
-        say([['he', it.plain]]);
+        const heard = alts.length ? `Duki heard: "${alts[0]}" — not quite!` : "🙉 Duki couldn't hear you!";
+        status.innerHTML = `${esc(heard)}<br>👂 Listen closely… then try again${attempts === 2 ? ' — last try, then we move on!' : '!'}`;
+        mascotSay(
+          `🤔 ${esc(heard)} We're saying <span class="he">${it.he}</span> — "${esc(it.translit)}". Listen sloooowly!`,
+          [['en', alts.length ? 'Not quite! Listen closely:' : "I couldn't hear you. Listen, nice and loud:"], ['he', it.plain, 0.55], ['en', 'Now you try!']]
+        );
       }
     } catch (e) {
       mic.classList.remove('listening'); mic.disabled = false;
-      status.textContent = '🎤 Mic problem — check permission, or tap Skip.';
+      SFX.bad();
+      status.textContent = micErrorText(e) + ' (Or tap Skip.)';
     }
   });
   say([['en', `Say ${it.en} in Hebrew. Like this:`], ['he', it.plain]]);
