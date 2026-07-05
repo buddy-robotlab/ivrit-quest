@@ -29,6 +29,13 @@ python3 -m http.server 8471
 > Tip: Hebrew text-to-speech uses the built-in iOS voice (Carmit). If Hebrew audio is silent,
 > add the voice under Settings → Accessibility → Spoken Content → Voices → Hebrew.
 
+## 📖 Bible Stories
+
+50 Tanakh stories (Creation → the Avot → Egypt & Exodus → the desert → Judges → David & Solomon)
+told in simple modern Hebrew with nikud, English translation on every page, tap-to-learn golden
+keywords, find-the-word challenges, and a 2-question quiz per story. Always unlocked — no gates.
+The kid's own avatar (with shop costumes) stars in every story. Data lives in `stories-a.js` … `stories-d.js`.
+
 ## 🎮 What's inside
 
 - **24 levels**: Alef-Bet (5 letter levels + boss review) → vowels (nikud) → 12 vocabulary worlds

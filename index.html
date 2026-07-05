@@ -43,7 +43,31 @@
       </div>
     </div>
     <div class="tipbox"><span style="font-size:24px">💡</span><span id="tip-text"></span></div>
+    <div id="stories-banner">📖 <span>Bible Stories — read &amp; play, always open!</span><span style="margin-left:auto">➜</span></div>
     <div class="scroll"><div id="path"></div></div>
+  </section>
+
+  <!-- STORY LIBRARY -->
+  <section id="library" class="screen">
+    <div class="hud">
+      <button id="lib-back" class="icon-btn">←</button>
+      <span style="font-size:22px;font-weight:bold">📖 Bible Stories</span>
+      <span class="spacer"></span>
+      <span class="pill">✔ <span id="lib-done">0</span>/<span id="lib-total">0</span></span>
+    </div>
+    <div class="scroll"><div id="lib-grid"></div></div>
+  </section>
+
+  <!-- STORY READER -->
+  <section id="reader" class="screen">
+    <div class="hud">
+      <button id="rd-back" class="icon-btn">←</button>
+      <div id="rd-title" style="font-weight:bold;font-size:18px"></div>
+      <span class="spacer"></span>
+      <button id="rd-dress" class="btn btn-ghost">🎭 Dress up</button>
+    </div>
+    <div class="progress" style="margin:0 18px;flex:none"><div id="rd-progress"></div></div>
+    <div id="rd-stage" class="scroll"></div>
   </section>
 
   <!-- LESSON -->
@@ -88,6 +112,11 @@
 
 </div>
 <script src="data.js"></script>
+<script src="stories.js"></script>
+<script src="stories-a.js"></script>
+<script src="stories-b.js"></script>
+<script src="stories-c.js"></script>
+<script src="stories-d.js"></script>
 <script src="app.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {

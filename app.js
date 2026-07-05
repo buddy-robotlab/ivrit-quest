@@ -88,12 +88,34 @@ function speakOne(text, lang, rate) {
     setTimeout(res, 9000); // safety net
   });
 }
+// Hebrew must ONLY ever be voiced by the Hebrew engine — the English voice
+// mangles it (e.g. "ch" in "chaver" becomes an English "ch", not the guttural ח).
+// Any 'en' part that contains Hebrew characters is split into runs: Hebrew runs
+// go to the he voice, the rest to en. Parenthesized transliterations are dropped
+// from speech (they stay visible on screen).
+const HE_CHARS = /[֐-׿]/;
+function expandParts(parts) {
+  const out = [];
+  for (const [lang, text, rate] of parts) {
+    if (lang === 'he' || !HE_CHARS.test(text)) { out.push([lang, text, rate]); continue; }
+    const cleaned = String(text).replace(/\([^)]*\)/g, ' ');
+    const segs = cleaned.match(/[֐-׿][֐-׿\s]*|[^֐-׿]+/g) || [];
+    for (const seg of segs) {
+      const t = seg.trim();
+      if (!/[a-zA-Zא-ת]/.test(t)) continue; // skip punctuation-only fragments
+      if (HE_CHARS.test(t)) out.push(['he', t, rate]);
+      else out.push(['en', t.replace(/["“”]/g, ' '), rate]);
+    }
+  }
+  return out;
+}
+
 let sayToken = 0;
 async function say(parts) { // parts: [['en','Listen!'],['he','שלום']] or ['he','שלום',0.55] for slow
   if (!synth) return;
   const my = ++sayToken;
   synth.cancel();
-  for (const [lang, text, rate] of parts) {
+  for (const [lang, text, rate] of expandParts(parts)) {
     if (my !== sayToken) return;
     await speakOne(text, lang, rate);
   }
@@ -563,7 +585,7 @@ function renderLearn(step, stage) {
     stage.appendChild(card);
     $('#b-letter').addEventListener('click', () => say([['he', it.nameHe]]));
     $('#b-word').addEventListener('click', () => say([['he', it.word.plain], ['en', it.word.en]]));
-    say([['en', `This is ${it.name}.`], ['he', it.nameHe], ['en', it.sound]]);
+    say([['en', 'This is'], ['he', it.nameHe], ['en', it.sound]]); // letter name via Hebrew voice only
     mascotSay(`💡 ${esc(it.mnemonic)}`);
     if (SR) wireLearnMic([it.word.plain, it.nameHe], it.word.he);
   } else {
@@ -642,7 +664,9 @@ function renderPickChar(step, stage) {
     finishStep(good, good ? '' : `${esc(it.name)} is <span class="he" style="font-size:26px">${it.char}</span>`);
   })));
   stage.appendChild(grid);
-  const audio = () => say([['en', isVowel ? `Tap ${it.name}. It says ${it.sound}` : `Tap the letter ${it.name}`], ['he', it.nameHe]]);
+  const audio = () => say(isVowel
+    ? [['en', 'Tap the vowel'], ['he', it.nameHe], ['en', `It says ${it.sound}`]]
+    : [['en', 'Tap the letter'], ['he', it.nameHe]]); // never say letter names with the English voice
   $('#replay').addEventListener('click', audio);
   audio();
 }
@@ -917,6 +941,185 @@ function renderBuild(step, stage) {
   $('#replay').addEventListener('click', audio);
   render();
   audio();
+}
+
+// ---------- Bible Stories ----------
+let reading = null;      // { story, page, mode: 'read'|'find'|'quiz', quizIdx, quizRight, misses }
+let shopReturnFn = null; // where the shop's back button should go
+
+function renderLibrary() {
+  show('library');
+  state.storiesDone = state.storiesDone || {};
+  $('#lib-total').textContent = STORIES.length;
+  $('#lib-done').textContent = Object.keys(state.storiesDone).length;
+  const grid = $('#lib-grid');
+  grid.innerHTML = '';
+  for (const era of STORY_ERAS) {
+    const list = STORIES.filter(s => s.era === era.id);
+    if (!list.length) continue;
+    const readCount = list.filter(s => state.storiesDone[s.id]).length;
+    const hdr = document.createElement('div');
+    hdr.className = 'era-hdr';
+    hdr.innerHTML = `${era.emoji} ${esc(era.title)} <span class="era-count">${readCount}/${list.length}</span>`;
+    grid.appendChild(hdr);
+    list.forEach(st => {
+      const read = !!state.storiesDone[st.id];
+      const card = document.createElement('div');
+      card.className = 'story-card' + (read ? ' read' : '');
+      card.innerHTML = `
+        <div class="sc-em">${st.emoji}</div>
+        <div class="sc-t">${esc(st.title)}</div>
+        <div class="sc-done">${read ? '✔ Read it!' : st.pages.length + ' pages'}</div>`;
+      card.addEventListener('click', () => { SFX.click(); openStory(st); });
+      grid.appendChild(card);
+    });
+  }
+  mascotSay(`Pick a story and I'll read it with you! Tap the <b style="color:#c98a00">golden words</b> to learn them 📖`,
+    [['en', 'Pick a story and I will read it with you!']]);
+}
+
+function openStory(st) {
+  st.pages.forEach(p => delete p.done); // reset find-challenges on replay
+  reading = { story: st, page: 0, mode: 'read', quizIdx: 0, quizRight: 0, misses: 0 };
+  show('reader');
+  $('#rd-title').textContent = `${st.emoji} ${st.title}`;
+  renderReaderPage();
+}
+
+function readerProgress() {
+  const R = reading, total = R.story.pages.length + R.story.quiz.length + 1;
+  const at = R.mode === 'quiz' ? R.story.pages.length + R.quizIdx : R.page;
+  $('#rd-progress').style.width = Math.min(100, (at / total) * 100) + '%';
+}
+
+function renderReaderPage() {
+  const R = reading, p = R.story.pages[R.page];
+  readerProgress();
+  const stage = $('#rd-stage');
+  const findMode = R.mode === 'find';
+  const kwOf = (tok) => p.kw.find(k => k[0] === normHe(tok));
+
+  const tokens = p.he.split(/\s+/);
+  stage.innerHTML = `
+    <div class="scene-banner">${p.scene}<div class="scene-hero">${avatarSVG(state.eq)}</div></div>
+    ${findMode ? `<div class="rd-find">🔍 Tap the Hebrew word that means: <b>${esc((p.kw.find(k => k[0] === p.q) || ['', '', p.q])[2])}</b></div>` : ''}
+    <div class="rd-he" id="rd-he">${tokens.map((t, i) =>
+      `<button class="tok ${!findMode && kwOf(t) ? 'kw' : ''}" data-i="${i}">${t}</button>`).join(' ')}</div>
+    <div class="rd-tr">${esc(p.translit)}</div>
+    <div class="rd-en">${esc(p.en)}</div>
+    ${findMode ? '' : '<div class="rd-kwnote">✨ Tap any word to hear it — golden words have secrets!</div>'}
+    <div class="rd-row">
+      <button class="btn sound-btn" id="rd-hear">🔊 Hear it</button>
+      ${findMode ? '' : `<button class="btn btn-green" id="rd-next">${R.page + 1 < R.story.pages.length || R.story.quiz.length ? 'Next ➜' : 'Finish 🎉'}</button>`}
+    </div>`;
+
+  $('#rd-hear').addEventListener('click', () => say([['he', p.plain], ['en', p.en]]));
+  $$('#rd-he .tok').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      const tok = tokens[i], kw = kwOf(tok);
+      if (findMode) {
+        if (normHe(tok) === p.q) {
+          btn.classList.add('hit');
+          SFX.good(); addXP(2); mascotMood('happy');
+          const k = p.kw.find(k => k[0] === p.q);
+          mascotSay(`🎯 Ken! <span class="he">${tok}</span> "${esc(k[1])}" = ${esc(k[2])} &nbsp;+2 XP`, [['he', p.q]]);
+          setTimeout(() => { R.mode = 'read'; advancePage(); }, 1000);
+        } else {
+          btn.classList.add('miss'); SFX.bad(); R.misses++;
+          setTimeout(() => btn.classList.remove('miss'), 500);
+          if (R.misses >= 2) {
+            R.misses = 0;
+            $$('#rd-he .tok').forEach((b, j) => { if (normHe(tokens[j]) === p.q) b.classList.add('hit'); });
+            const k = p.kw.find(k => k[0] === p.q);
+            mascotSay(`Here it is! <span class="he">${p.q}</span> = ${esc(k[2])}`, [['he', p.q]]);
+            setTimeout(() => { R.mode = 'read'; advancePage(); }, 1400);
+          }
+        }
+      } else if (kw) {
+        SFX.click();
+        mascotSay(`<span class="he" style="font-size:22px">${tok}</span> — "${esc(kw[1])}" = <b>${esc(kw[2])}</b>`, [['he', kw[0]]]);
+        btn.classList.add('hit'); setTimeout(() => btn.classList.remove('hit'), 700);
+      } else {
+        say([['he', normHe(tok)]]);
+      }
+    });
+  });
+  if (!findMode) {
+    $('#rd-next') && $('#rd-next').addEventListener('click', () => {
+      SFX.click();
+      if (p.q && !p.done) { p.done = true; R.mode = 'find'; R.misses = 0; renderReaderPage(); }
+      else advancePage();
+    });
+    say([['he', p.plain]]);
+  }
+}
+
+function advancePage() {
+  const R = reading;
+  if (R.page + 1 < R.story.pages.length) { R.page++; R.mode = 'read'; renderReaderPage(); }
+  else if (R.quizIdx < R.story.quiz.length) { R.mode = 'quiz'; renderStoryQuiz(); }
+  else finishStory();
+}
+
+function renderStoryQuiz() {
+  const R = reading, qz = R.story.quiz[R.quizIdx];
+  readerProgress();
+  const stage = $('#rd-stage');
+  stage.innerHTML = `
+    <div class="scene-banner" style="font-size:44px">🤔📖</div>
+    <div class="prompt" style="margin:6px auto 18px">${esc(qz.q)}</div>
+    <div class="choices" style="margin:0 auto 40px"></div>`;
+  const grid = stage.querySelector('.choices');
+  qz.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.innerHTML = `<span class="c-txt">${esc(opt)}</span>`;
+    b.addEventListener('click', () => {
+      $$('#rd-stage .choice').forEach(c => (c.disabled = true));
+      const good = i === qz.a;
+      b.classList.add(good ? 'right' : 'wrong-pick');
+      if (!good) $$('#rd-stage .choice')[qz.a].classList.add('reveal');
+      if (good) { R.quizRight++; SFX.good(); addXP(5); mascotMood('happy'); }
+      else { SFX.bad(); mascotMood('sad'); }
+      setTimeout(() => { R.quizIdx++; if (R.quizIdx < R.story.quiz.length) renderStoryQuiz(); else finishStory(); }, good ? 900 : 1700);
+    });
+    grid.appendChild(b);
+  });
+  say([['en', qz.q]]);
+}
+
+function finishStory() {
+  const R = reading, st = R.story;
+  state.storiesDone = state.storiesDone || {};
+  const first = !state.storiesDone[st.id];
+  const coins = first ? 15 : 0;
+  const xp = first ? 30 : 5;
+  state.storiesDone[st.id] = true;
+  state.coins += coins;
+  addXP(xp);
+  save();
+  $('#rd-progress').style.width = '100%';
+  $('#rd-stage').innerHTML = `
+    <div class="scene-banner" style="font-size:56px">${st.emoji}✨🎉</div>
+    <h2 style="text-align:center;color:var(--sun);font-size:32px">The End!</h2>
+    <div style="text-align:center;font-size:18px;color:#cfc4f2;margin-top:8px">
+      You read <b>${esc(st.title)}</b> — ${R.quizRight}/${st.quiz.length} on the quiz!</div>
+    <div class="gains" style="justify-content:center;display:flex;margin-top:14px">
+      <div class="gain">⚡ +${xp}<span>XP</span></div>
+      ${coins ? `<div class="gain">🪙 +${coins}<span>coins</span></div>` : ''}
+    </div>
+    <div class="rd-row" style="margin-top:20px">
+      <button class="btn btn-primary" id="rd-more">📖 More stories!</button>
+      <button class="btn btn-ghost" id="rd-map">🗺 Back to the map</button>
+    </div>`;
+  $('#rd-more').addEventListener('click', () => { SFX.click(); renderLibrary(); });
+  $('#rd-map').addEventListener('click', () => { SFX.click(); renderHome(); });
+  SFX.fanfare(); confetti(60);
+  mascotSay(first
+    ? `🎉 Kol hakavod! You finished <b>${esc(st.title)}</b> and earned ${coins} coins!`
+    : `📖 Great re-read! The words stick a little more every time.`,
+    [['he', 'כל הכבוד'], ['en', `You finished ${st.title}!`]], 'happy');
+  reading = null;
 }
 
 // ---------- backup nudge: every ~5 completed levels, one gentle reminder ----------
@@ -1201,7 +1404,25 @@ function boot() {
   });
   $('#quit-btn').addEventListener('click', () => { synth && synth.cancel(); lesson = null; renderHome(); });
   $('#shop-btn').addEventListener('click', () => { SFX.click(); renderShop(); });
-  $('#shop-back').addEventListener('click', () => { SFX.click(); renderHome(); });
+  $('#shop-back').addEventListener('click', () => {
+    SFX.click();
+    if (shopReturnFn) { const f = shopReturnFn; shopReturnFn = null; f(); }
+    else renderHome();
+  });
   $('#backup-btn').addEventListener('click', () => { SFX.click(); showBackup(); });
+
+  // Bible Stories
+  $('#stories-banner').addEventListener('click', () => { SFX.click(); renderLibrary(); });
+  $('#lib-back').addEventListener('click', () => { SFX.click(); renderHome(); });
+  $('#rd-back').addEventListener('click', () => { synth && synth.cancel(); reading = null; renderLibrary(); });
+  $('#rd-dress').addEventListener('click', () => {
+    SFX.click();
+    shopReturnFn = () => {
+      if (!reading) return renderHome();
+      show('reader');
+      if (reading.mode === 'quiz') renderStoryQuiz(); else renderReaderPage();
+    };
+    renderShop();
+  });
 }
 document.addEventListener('DOMContentLoaded', boot);
