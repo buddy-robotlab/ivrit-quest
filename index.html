@@ -120,7 +120,17 @@
 <script src="app.js"></script>
 <script>
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js')
+      .then((reg) => reg.update().catch(() => {}))
+      .catch(() => {});
+    // When a new version takes control, reload once so the fresh UI appears
+    // immediately instead of waiting for a second full relaunch.
+    let refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshed) return;
+      refreshed = true;
+      location.reload();
+    });
   }
 </script>
 </body>
