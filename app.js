@@ -830,7 +830,13 @@ function renderMatch(step, stage) {
     el.className = 'match-card';
     el.innerHTML = `<span class="${c.side === 'a' ? 'he' : ''}">${c.label}</span>${c.sub ? `<span class="m-sub">${esc(c.sub)}</span>` : ''}`;
     el.addEventListener('click', () => {
-      if (lockBoard || el.classList.contains('matched') || el === (first && first.el)) return;
+      if (lockBoard || el.classList.contains('matched')) return;
+      if (first && el === first.el) { // tap the selected tile again to deselect it
+        SFX.click();
+        el.classList.remove('picked');
+        first = null;
+        return;
+      }
       SFX.click();
       el.classList.add('picked');
       if (!first) { first = { c, el }; return; }
