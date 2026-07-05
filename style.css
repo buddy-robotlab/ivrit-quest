@@ -295,6 +295,7 @@ html, body {
 }
 .tile:active { transform: scale(.94); }
 .tile.ghost { opacity: .25; pointer-events: none; }
+.build-answer.shake-row { animation: shake .4s; border-color: var(--wrong); }
 
 /* feedback bar */
 #feedback {

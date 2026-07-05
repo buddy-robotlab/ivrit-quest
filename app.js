@@ -507,12 +507,34 @@ function showFeedback(good, subHtml) {
 }
 function hideFeedback() { $('#feedback').classList.remove('show'); }
 
+const TRY_AGAIN = ['Not that one — try again!', 'Almost! Have another look.', 'Nope — listen and try again!', 'Not quite — you can find it!'];
+// Wrong pick during practice: do NOT advance. Gray out the pick, encourage,
+// re-read the question, and let them keep trying until they get it right.
+// (Skill Checks skip this — they are one-shot tests.)
+function wrongAttempt(step, btn, replay) {
+  const L = lesson;
+  step.hadWrong = true;
+  L.combo = 0;
+  updateProgress();
+  SFX.bad(); mascotMood('sad');
+  if (btn) { btn.classList.add('wrong-pick'); btn.disabled = true; }
+  showFeedback(false, pick(TRY_AGAIN));
+  if (!step.requeued && !step.requeuedAdded) {
+    L.queue.push({ ...step, requeued: true, hadWrong: false, requeuedAdded: false });
+    step.requeuedAdded = true;
+  }
+  setTimeout(() => {
+    hideFeedback();
+    if (replay) replay();
+  }, 1400);
+}
+
 function finishStep(correct, subHtml) {
   const L = lesson, step = L.queue[L.idx];
   if (step.isQuiz) {
     if (!step.requeued) L.totalQuiz++;
     if (correct) {
-      if (!step.requeued) { L.correctFirst++; addXP(10); } else addXP(5);
+      if (!step.requeued && !step.hadWrong) { L.correctFirst++; addXP(10); } else addXP(5);
       L.combo++;
       if (L.combo > 0 && L.combo % 5 === 0) { addXP(5); SFX.combo(); mascotSay(`🔥 Combo x${L.combo}! Bonus XP!`); }
       SFX.good(); mascotMood('happy');
@@ -657,8 +679,9 @@ function renderPickChar(step, stage) {
   const opts = shuffle([it, ...others(pool, it, 3, d => d.char)]);
   const grid = document.createElement('div'); grid.className = 'choices';
   opts.forEach(o => grid.appendChild(choiceBtn(`<span class="c-he">${o.char}</span>`, (btn) => {
-    lockChoices();
     const good = o === it;
+    if (!good && !lesson.isCheck) return wrongAttempt(step, btn, audio);
+    lockChoices();
     btn.classList.add(good ? 'right' : 'wrong-pick');
     if (!good) $$('#stage .choice').forEach((c, i) => { if (opts[i] === it) c.classList.add('reveal'); });
     finishStep(good, good ? '' : `${esc(it.name)} is <span class="he" style="font-size:26px">${it.char}</span>`);
@@ -685,13 +708,15 @@ function renderPickName(step, stage) {
   stage.appendChild(hero);
   hero.style.marginBottom = '18px';
 
+  const replayQ = () => say([['en', 'What is this one? Look closely!']]);
   const opts = shuffle([it, ...others(pool.filter(d => d.sound !== it.sound || d === it), it, 3, d => d.name)]);
   const grid = document.createElement('div'); grid.className = 'choices';
   opts.forEach(o => grid.appendChild(choiceBtn(
     `<span class="c-txt">${esc(o.name)}</span><span class="c-sub">${esc(o.sound)}</span>`,
     (btn) => {
-      lockChoices();
       const good = o === it;
+      if (!good && !lesson.isCheck) return wrongAttempt(step, btn, replayQ);
+      lockChoices();
       btn.classList.add(good ? 'right' : 'wrong-pick');
       if (!good) $$('#stage .choice').forEach((c, i) => { if (opts[i] === it) c.classList.add('reveal'); });
       if (good) say([['he', it.nameHe]]);
@@ -714,8 +739,9 @@ function renderHearPick(step, stage) {
   opts.forEach(o => grid.appendChild(choiceBtn(
     `<span class="c-em">${o.emoji}</span><span class="c-txt">${esc(o.en)}</span>`,
     (btn) => {
-      lockChoices();
       const good = o === it;
+      if (!good && !lesson.isCheck) return wrongAttempt(step, btn, audio);
+      lockChoices();
       btn.classList.add(good ? 'right' : 'wrong-pick');
       if (!good) $$('#stage .choice').forEach((c, i) => { if (opts[i] === it) c.classList.add('reveal'); });
       finishStep(good, `<span class="he">${it.he}</span> = ${esc(it.en)} ${it.emoji}`);
@@ -739,13 +765,15 @@ function renderReadPick(step, stage) {
   hero.textContent = it.he;
   stage.appendChild(hero);
 
+  const replayQ = () => say([['en', 'What does this say? Sound it out letter by letter!']]);
   const opts = shuffle([it, ...others(pool, it, 3, d => d.en)]);
   const grid = document.createElement('div'); grid.className = 'choices';
   opts.forEach(o => grid.appendChild(choiceBtn(
     `<span class="c-em">${o.emoji}</span><span class="c-txt">${esc(o.en)}</span>`,
     (btn) => {
-      lockChoices();
       const good = o === it;
+      if (!good && !lesson.isCheck) return wrongAttempt(step, btn, replayQ);
+      lockChoices();
       btn.classList.add(good ? 'right' : 'wrong-pick');
       if (!good) $$('#stage .choice').forEach((c, i) => { if (opts[i] === it) c.classList.add('reveal'); });
       say([['he', it.plain]]);
@@ -763,13 +791,15 @@ function renderEnPick(step, stage) {
   prompt.innerHTML = `How do you say <b>${esc(it.en)}</b> ${it.emoji} in Hebrew?`;
   stage.appendChild(prompt);
 
+  const replayQ = () => say([['en', `How do you say ${it.en} in Hebrew?`]]);
   const opts = shuffle([it, ...others(pool, it, 3, d => d.he)]);
   const grid = document.createElement('div'); grid.className = 'choices';
   opts.forEach(o => grid.appendChild(choiceBtn(
     `<span class="c-he small">${o.he}</span><span class="c-sub">${esc(o.translit)}</span>`,
     (btn) => {
-      lockChoices();
       const good = o === it;
+      if (!good && !lesson.isCheck) return wrongAttempt(step, btn, replayQ);
+      lockChoices();
       btn.classList.add(good ? 'right' : 'wrong-pick');
       if (!good) $$('#stage .choice').forEach((c, i) => { if (opts[i] === it) c.classList.add('reveal'); });
       say([['he', it.plain]]);
@@ -932,6 +962,11 @@ function renderBuild(step, stage) {
   check.className = 'btn btn-green'; check.textContent = 'Check ✓'; check.style.marginTop = '18px';
   check.addEventListener('click', () => {
     const good = chosen.map(t => t.w).join(' ') === it.words.join(' ');
+    if (!good && !lesson.isCheck) {
+      answer.classList.remove('shake-row'); void answer.offsetWidth; // restart animation
+      answer.classList.add('shake-row');
+      return wrongAttempt(step, null, audio);
+    }
     if (good) say([['he', it.plain]]);
     finishStep(good, `<span class="he">${it.he}</span> — "${esc(it.translit)}"`);
   });
@@ -1070,18 +1105,26 @@ function renderStoryQuiz() {
     <div class="prompt" style="margin:6px auto 18px">${esc(qz.q)}</div>
     <div class="choices" style="margin:0 auto 40px"></div>`;
   const grid = stage.querySelector('.choices');
+  let hadWrong = false;
   qz.options.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'choice';
     b.innerHTML = `<span class="c-txt">${esc(opt)}</span>`;
     b.addEventListener('click', () => {
-      $$('#rd-stage .choice').forEach(c => (c.disabled = true));
       const good = i === qz.a;
-      b.classList.add(good ? 'right' : 'wrong-pick');
-      if (!good) $$('#rd-stage .choice')[qz.a].classList.add('reveal');
-      if (good) { R.quizRight++; SFX.good(); addXP(5); mascotMood('happy'); }
-      else { SFX.bad(); mascotMood('sad'); }
-      setTimeout(() => { R.quizIdx++; if (R.quizIdx < R.story.quiz.length) renderStoryQuiz(); else finishStory(); }, good ? 900 : 1700);
+      if (!good) {
+        // stay on the question until they find the right answer
+        hadWrong = true;
+        b.classList.add('wrong-pick'); b.disabled = true;
+        SFX.bad(); mascotMood('sad');
+        mascotSay(`🤔 ${esc(pick(TRY_AGAIN))}`, [['en', 'Not that one!'], ['en', qz.q]]);
+        return;
+      }
+      $$('#rd-stage .choice').forEach(c => (c.disabled = true));
+      b.classList.add('right');
+      if (!hadWrong) { R.quizRight++; addXP(5); }
+      SFX.good(); mascotMood('happy');
+      setTimeout(() => { R.quizIdx++; if (R.quizIdx < R.story.quiz.length) renderStoryQuiz(); else finishStory(); }, 900);
     });
     grid.appendChild(b);
   });
