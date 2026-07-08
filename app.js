@@ -354,6 +354,7 @@ function renderHome() {
   $('#xp-fill').style.width = Math.min(100, ((state.xp - base) / Math.max(1, top - base)) * 100) + '%';
 
   $('#tip-text').textContent = pick(HOME_TIPS);
+  $('#daily-banner').style.display = LEVELS.some(l => l.id in state.stars) ? 'flex' : 'none';
 
   const path = $('#path');
   path.innerHTML = '';
@@ -441,7 +442,7 @@ function buildQueue(level) {
 // --- mid-lesson save/resume: refreshing the page must never lose a kid's progress ---
 function persistLesson() {
   const L = lesson;
-  if (!L || L.isCheck) return; // skill checks are short one-shots, never resumed
+  if (!L || L.isCheck || L.isDaily) return; // checks & daily practice are short one-shots, never resumed
   state.lessonSave = {
     levelId: L.level.id, idx: L.idx, totalQuiz: L.totalQuiz, correctFirst: L.correctFirst,
     combo: L.combo, xpGained: L.xpGained,
@@ -1189,6 +1190,7 @@ function wireNudge() {
 function finishLevel() {
   const L = lesson;
   if (L.isCheck) return finishCheck();
+  if (L.isDaily) return finishDaily();
   const acc = L.totalQuiz ? L.correctFirst / L.totalQuiz : 1;
   const stars = acc >= 0.9 ? 3 : acc >= 0.7 ? 2 : 1;
   const firstTime = !(L.level.id in state.stars);
@@ -1229,21 +1231,76 @@ function finishLevel() {
 // ---------- skill check: test out of levels you already know ----------
 const CHECK_PASS = 0.8;
 
+function levelQuizzes(lvl, n) {
+  const mk = (type, item) => ({ type, item, isQuiz: true, pool: lvl.items, srcKind: lvl.kind });
+  const items = shuffle(lvl.items);
+  const qs = [];
+  if (lvl.kind === 'letters' || lvl.kind === 'review' || lvl.kind === 'vowels') {
+    items.slice(0, n).forEach((it, j) => qs.push(mk(j % 2 ? 'pickName' : 'pickChar', it)));
+  } else if (lvl.kind === 'vocab') {
+    items.slice(0, n).forEach((it, j) => qs.push(mk(['hearPick', 'readPick', 'enPick'][j % 3], it)));
+  } else { // sentences
+    items.slice(0, n).forEach((it, j) => qs.push(mk(j % 2 ? 'build' : 'readPick', it)));
+  }
+  return qs;
+}
+
 function buildCheckQueue(fromIdx, toIdx) {
   const cand = [];
   for (let i = fromIdx; i < toIdx; i++) {
     const lvl = LEVELS[i];
-    const mk = (type, item) => ({ type, item, isQuiz: true, pool: lvl.items, srcKind: lvl.kind });
-    const items = shuffle(lvl.items);
-    if (lvl.kind === 'letters' || lvl.kind === 'review' || lvl.kind === 'vowels') {
-      items.slice(0, 3).forEach((it, j) => cand.push(mk(j % 2 ? 'pickName' : 'pickChar', it)));
-    } else if (lvl.kind === 'vocab') {
-      items.slice(0, 3).forEach((it, j) => cand.push(mk(['hearPick', 'readPick', 'enPick'][j % 3], it)));
-    } else { // sentences
-      items.slice(0, 2).forEach((it, j) => cand.push(mk(j % 2 ? 'build' : 'readPick', it)));
-    }
+    cand.push(...levelQuizzes(lvl, lvl.kind === 'sentences' ? 2 : 3));
   }
   return shuffle(cand).slice(0, 10);
+}
+
+// ---------- daily practice: spaced review of everything already learned ----------
+function startDaily() {
+  const done = LEVELS.filter(l => l.id in state.stars && l.kind !== 'review');
+  if (!done.length) {
+    mascotSay('Finish your first level, then come back for Daily Practice! 💪');
+    return;
+  }
+  synth && synth.cancel();
+  const cand = [];
+  shuffle(done).forEach(lvl => cand.push(...levelQuizzes(lvl, 2)));
+  lesson = {
+    level: { id: '__daily', title: 'Daily Practice', emoji: '🔄', kind: 'daily', items: [] },
+    isDaily: true,
+    queue: shuffle(cand).slice(0, 12),
+    idx: 0, totalQuiz: 0, correctFirst: 0, combo: 0, xpGained: 0,
+  };
+  show('lesson');
+  renderStep();
+  mascotSay('🔄 Daily Practice! A quick mix of everything you know — keep it strong!',
+    [['en', 'Daily practice! A quick mix of everything you know.']]);
+}
+
+function finishDaily() {
+  const L = lesson;
+  const today = new Date().toDateString();
+  const firstToday = state.lastDaily !== today;
+  const coins = firstToday ? 15 : 0;
+  state.lastDaily = today;
+  state.coins += coins;
+  save();
+  const acc = L.totalQuiz ? Math.round((L.correctFirst / L.totalQuiz) * 100) : 100;
+  $('#results').innerHTML = `
+    <h2>🔄 Practice Complete!</h2>
+    <div style="font-size:18px;color:#cfc4f2">Your Hebrew stays strong 💪</div>
+    <div class="gains">
+      <div class="gain">⚡ +${L.xpGained}<span>XP</span></div>
+      <div class="gain">🎯 ${acc}%<span>first try</span></div>
+      ${coins ? `<div class="gain">🪙 +${coins}<span>daily bonus</span></div>` : ''}
+    </div>
+    ${coins ? '' : '<div style="font-size:15px;color:#cfc4f2">Daily coin bonus already claimed — come back tomorrow! 🌅</div>'}
+    <button class="btn btn-primary" id="res-home2" style="margin-top:14px">🗺 Back to the map</button>`;
+  show('results');
+  $('#res-home2').addEventListener('click', () => { SFX.click(); renderHome(); });
+  SFX.fanfare(); confetti(40);
+  mascotSay(firstToday ? `💪 Kol hakavod! +${coins} coins for today's practice!` : '💪 Great extra practice!',
+    [['he', 'כל הכבוד'], ['en', 'Practice complete!']], 'happy');
+  lesson = null;
 }
 
 function showSkillCheckIntro(targetIdx) {
@@ -1460,8 +1517,9 @@ function boot() {
   });
   $('#backup-btn').addEventListener('click', () => { SFX.click(); showBackup(); });
 
-  // Bible Stories
+  // Bible Stories & Daily Practice
   $('#stories-banner').addEventListener('click', () => { SFX.click(); renderLibrary(); });
+  $('#daily-banner').addEventListener('click', () => { SFX.click(); startDaily(); });
   $('#lib-back').addEventListener('click', () => { SFX.click(); renderHome(); });
   $('#rd-back').addEventListener('click', () => { synth && synth.cancel(); reading = null; renderLibrary(); });
   $('#rd-dress').addEventListener('click', () => {

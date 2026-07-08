@@ -361,6 +361,14 @@ html, body {
   transition: transform .12s;
 }
 #stories-banner:active { transform: scale(.97); }
+#daily-banner {
+  margin: 10px 24px 4px; padding: 14px 18px; border-radius: 20px;
+  background: linear-gradient(90deg, #4fe8b8, var(--mint)); color: #045237;
+  font-weight: bold; font-size: 19px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 0 #0f9c72;
+  transition: transform .12s;
+}
+#daily-banner:active { transform: scale(.97); }
 
 .era-hdr {
   grid-column: 1 / -1; font-size: 21px; font-weight: bold; color: var(--sun);
