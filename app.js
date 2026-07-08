@@ -1020,16 +1020,56 @@ function renderLibrary() {
     [['en', 'Pick a story and I will read it with you!']]);
 }
 
+// Build a varied challenge round from the story's own content:
+// keyword meanings (both directions), word sorting, sentence translation
+// (both directions), then the authored comprehension questions.
+function buildStoryQuiz(st) {
+  const acts = [];
+  const seenW = new Set(), seenM = new Set(), kws = [];
+  st.pages.flatMap(p => p.kw).forEach(k => {
+    if (seenW.has(k[0]) || seenM.has(k[2])) return;
+    seenW.add(k[0]); seenM.add(k[2]); kws.push(k);
+  });
+  if (kws.length >= 4) {
+    // 2× "what does this Hebrew word mean?"
+    shuffle(kws).slice(0, 2).forEach(k => {
+      const opts = shuffle([k, ...shuffle(kws.filter(x => x !== k)).slice(0, 3)]);
+      acts.push({ kind: 'mc', prompt: 'What does this word mean?', promptHe: k[0], say: [['he', k[0]]], options: opts.map(o => o[2]), a: opts.indexOf(k) });
+    });
+    // 1× "which Hebrew word means …?"
+    const k = pick(kws);
+    const opts = shuffle([k, ...shuffle(kws.filter(x => x !== k)).slice(0, 3)]);
+    acts.push({ kind: 'mc', prompt: `Which Hebrew word means: ${k[2]}?`, say: [['en', `Which word means ${k[2]}?`]], options: opts.map(o => o[0]), optionsHe: true, a: opts.indexOf(k) });
+  }
+  // 2× word sorting from the story's own sentences
+  shuffle(st.pages.filter(p => {
+    const n = p.plain.split(' ').length;
+    return n >= 3 && n <= 7;
+  })).slice(0, 2).forEach(p => acts.push({ kind: 'sort', page: p }));
+  // sentence translation, both directions
+  if (st.pages.length >= 3) {
+    const pg = pick(st.pages);
+    const opts = shuffle([pg, ...shuffle(st.pages.filter(x => x !== pg)).slice(0, 3)]);
+    acts.push({ kind: 'mc', prompt: 'What does this sentence mean?', promptHe: pg.he, say: [['he', pg.plain]], options: opts.map(o => o.en), a: opts.indexOf(pg) });
+    const pg2 = pick(st.pages);
+    const opts2 = shuffle([pg2, ...shuffle(st.pages.filter(x => x !== pg2)).slice(0, 3)]);
+    acts.push({ kind: 'mc', prompt: `Which sentence says: "${pg2.en}"?`, say: [['en', `Which sentence says: ${pg2.en}`]], options: opts2.map(o => o.he), optionsHe: true, a: opts2.indexOf(pg2) });
+  }
+  // authored comprehension last — recall after the word work
+  st.quiz.forEach(q => acts.push({ kind: 'mc', prompt: q.q, say: [['en', q.q]], options: q.options, a: q.a }));
+  return acts;
+}
+
 function openStory(st) {
   st.pages.forEach(p => delete p.done); // reset find-challenges on replay
-  reading = { story: st, page: 0, mode: 'read', quizIdx: 0, quizRight: 0, misses: 0 };
+  reading = { story: st, page: 0, mode: 'read', acts: buildStoryQuiz(st), quizIdx: 0, quizRight: 0, misses: 0 };
   show('reader');
   $('#rd-title').textContent = `${st.emoji} ${st.title}`;
   renderReaderPage();
 }
 
 function readerProgress() {
-  const R = reading, total = R.story.pages.length + R.story.quiz.length + 1;
+  const R = reading, total = R.story.pages.length + R.acts.length + 1;
   const at = R.mode === 'quiz' ? R.story.pages.length + R.quizIdx : R.page;
   $('#rd-progress').style.width = Math.min(100, (at / total) * 100) + '%';
 }
@@ -1099,43 +1139,105 @@ function renderReaderPage() {
 function advancePage() {
   const R = reading;
   if (R.page + 1 < R.story.pages.length) { R.page++; R.mode = 'read'; renderReaderPage(); }
-  else if (R.quizIdx < R.story.quiz.length) { R.mode = 'quiz'; renderStoryQuiz(); }
+  else if (R.quizIdx < R.acts.length) { R.mode = 'quiz'; renderStoryAct(); }
   else finishStory();
 }
 
-function renderStoryQuiz() {
-  const R = reading, qz = R.story.quiz[R.quizIdx];
+function nextStoryAct() {
+  const R = reading;
+  R.quizIdx++;
+  if (R.quizIdx < R.acts.length) renderStoryAct();
+  else finishStory();
+}
+
+function renderStoryAct() {
+  const R = reading, act = R.acts[R.quizIdx];
   readerProgress();
+  if (act.kind === 'sort') return renderStorySort(act);
   const stage = $('#rd-stage');
   stage.innerHTML = `
-    <div class="scene-banner" style="font-size:44px">🤔📖</div>
-    <div class="prompt" style="margin:6px auto 18px">${esc(qz.q)}</div>
-    <div class="choices" style="margin:0 auto 40px"></div>`;
+    <div class="scene-banner" style="font-size:44px">🤔${R.story.emoji}</div>
+    <div class="prompt" style="margin:6px auto 8px">${esc(act.prompt)}</div>
+    ${act.promptHe ? `<div class="he-big" style="color:var(--sun);text-align:center;margin-bottom:14px">${act.promptHe}</div>` : ''}
+    <div class="choices" style="margin:10px auto 40px"></div>`;
   const grid = stage.querySelector('.choices');
   let hadWrong = false;
-  qz.options.forEach((opt, i) => {
+  act.options.forEach((opt, i) => {
     const b = document.createElement('button');
     b.className = 'choice';
-    b.innerHTML = `<span class="c-txt">${esc(opt)}</span>`;
+    b.innerHTML = act.optionsHe
+      ? `<span class="c-he small"${String(opt).length > 14 ? ' style="font-size:20px"' : ''}>${opt}</span>`
+      : `<span class="c-txt">${esc(opt)}</span>`;
     b.addEventListener('click', () => {
-      const good = i === qz.a;
+      const good = i === act.a;
       if (!good) {
-        // stay on the question until they find the right answer
         hadWrong = true;
         b.classList.add('wrong-pick'); b.disabled = true;
         SFX.bad(); mascotMood('sad');
-        mascotSay(`🤔 ${esc(pick(TRY_AGAIN))}`, [['en', 'Not that one!'], ['en', qz.q]]);
+        mascotSay(`🤔 ${esc(pick(TRY_AGAIN))}`, act.say);
         return;
       }
       $$('#rd-stage .choice').forEach(c => (c.disabled = true));
       b.classList.add('right');
       if (!hadWrong) { R.quizRight++; addXP(5); }
       SFX.good(); mascotMood('happy');
-      setTimeout(() => { R.quizIdx++; if (R.quizIdx < R.story.quiz.length) renderStoryQuiz(); else finishStory(); }, 900);
+      if (act.optionsHe) say([['he', normHe(String(opt))]]);
+      setTimeout(nextStoryAct, 950);
     });
     grid.appendChild(b);
   });
-  say([['en', qz.q]]);
+  if (act.say) say(act.say);
+}
+
+function renderStorySort(act) {
+  const R = reading, p = act.page;
+  const stage = $('#rd-stage');
+  stage.innerHTML = `
+    <div class="scene-banner" style="font-size:44px">🔀${R.story.emoji}</div>
+    <div class="prompt" style="margin:6px auto 8px">🔀 Put the words in order: <b>"${esc(p.en)}"</b> <button class="icon-btn" id="sort-replay">🔊</button></div>
+    <div class="build-answer" style="margin:14px auto 16px"></div>
+    <div class="build-bank" style="margin:0 auto"></div>
+    <div class="rd-row"><button class="btn btn-green" id="sort-check" style="display:none">Check ✓</button></div>`;
+  const words = p.plain.split(' ');
+  const tiles = shuffle(words.map((w, i) => ({ w, i, used: false })));
+  const chosen = [];
+  const answer = stage.querySelector('.build-answer'), bank = stage.querySelector('.build-bank');
+  const checkBtn = $('#sort-check');
+  const render = () => {
+    answer.innerHTML = ''; bank.innerHTML = '';
+    chosen.forEach((t, i) => {
+      const b = document.createElement('button');
+      b.className = 'tile'; b.textContent = t.w;
+      b.addEventListener('click', () => { SFX.click(); t.used = false; chosen.splice(i, 1); render(); });
+      answer.appendChild(b);
+    });
+    tiles.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'tile' + (t.used ? ' ghost' : ''); b.textContent = t.w;
+      b.addEventListener('click', () => { if (t.used) return; SFX.click(); t.used = true; chosen.push(t); render(); });
+      bank.appendChild(b);
+    });
+    checkBtn.style.display = chosen.length === words.length ? 'inline-block' : 'none';
+  };
+  let hadWrong = false;
+  checkBtn.addEventListener('click', () => {
+    const good = chosen.map(t => t.w).join(' ') === words.join(' ');
+    if (!good) {
+      hadWrong = true;
+      answer.classList.remove('shake-row'); void answer.offsetWidth;
+      answer.classList.add('shake-row');
+      SFX.bad(); mascotMood('sad');
+      mascotSay(`🤔 ${esc(pick(TRY_AGAIN))} Listen:`, [['he', p.plain, 0.7]]);
+      return;
+    }
+    if (!hadWrong) { R.quizRight++; addXP(5); }
+    SFX.good(); mascotMood('happy');
+    say([['he', p.plain]]);
+    setTimeout(nextStoryAct, 1100);
+  });
+  $('#sort-replay').addEventListener('click', () => say([['en', p.en], ['he', p.plain]]));
+  render();
+  say([['en', 'Put the words in order.'], ['he', p.plain]]);
 }
 
 function finishStory() {
@@ -1153,7 +1255,7 @@ function finishStory() {
     <div class="scene-banner" style="font-size:56px">${st.emoji}✨🎉</div>
     <h2 style="text-align:center;color:var(--sun);font-size:32px">The End!</h2>
     <div style="text-align:center;font-size:18px;color:#cfc4f2;margin-top:8px">
-      You read <b>${esc(st.title)}</b> — ${R.quizRight}/${st.quiz.length} on the quiz!</div>
+      You read <b>${esc(st.title)}</b> — ${R.quizRight}/${R.acts.length} challenges aced!</div>
     <div class="gains" style="justify-content:center;display:flex;margin-top:14px">
       <div class="gain">⚡ +${xp}<span>XP</span></div>
       ${coins ? `<div class="gain">🪙 +${coins}<span>coins</span></div>` : ''}
@@ -1527,7 +1629,7 @@ function boot() {
     shopReturnFn = () => {
       if (!reading) return renderHome();
       show('reader');
-      if (reading.mode === 'quiz') renderStoryQuiz(); else renderReaderPage();
+      if (reading.mode === 'quiz') renderStoryAct(); else renderReaderPage();
     };
     renderShop();
   });
