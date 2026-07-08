@@ -313,6 +313,104 @@ const SENTENCES_FEEL = [
   { he: 'הַכֹּל בְּסֵדֶר', plain: 'הכל בסדר', words: ['הכל', 'בסדר'], translit: 'ha-KOL be-SE-der', en: 'Everything is OK', emoji: '👌' },
 ];
 
+// --- conversation pack 2: 8 more real-life topics (80 sentences) ---
+const SENTENCES_REST = [
+  { he: 'שׁוּלְחָן לִשְׁנַיִים, בְּבַקָּשָׁה', plain: 'שולחן לשניים בבקשה', words: ['שולחן', 'לשניים', 'בבקשה'], translit: 'shul-CHAN lish-NA-yim, be-va-ka-SHA', en: 'A table for two, please', emoji: '🪑' },
+  { he: 'אֶפְשָׁר תַּפְרִיט, בְּבַקָּשָׁה?', plain: 'אפשר תפריט בבקשה', words: ['אפשר', 'תפריט', 'בבקשה'], translit: 'ef-SHAR taf-RIT, be-va-ka-SHA?', en: 'May I have a menu, please?', emoji: '📋' },
+  { he: 'אֲנַחְנוּ רוֹצִים לְהַזְמִין', plain: 'אנחנו רוצים להזמין', words: ['אנחנו', 'רוצים', 'להזמין'], translit: 'a-NACH-nu ro-TSIM le-haz-MIN', en: 'We want to order', emoji: '🙋' },
+  { he: 'אֲנִי רוֹצֶה פָלָאפֶל בְּפִיתָה', plain: 'אני רוצה פלאפל בפיתה', words: ['אני', 'רוצה', 'פלאפל', 'בפיתה'], translit: 'a-NEE ro-TSE fa-LA-fel be-fee-TA', en: 'I want falafel in a pita', emoji: '🧆' },
+  { he: 'בְּלִי חָרִיף, בְּבַקָּשָׁה', plain: 'בלי חריף בבקשה', words: ['בלי', 'חריף', 'בבקשה'], translit: 'bli cha-RIF, be-va-ka-SHA', en: 'Not spicy, please', emoji: '🌶️' },
+  { he: 'זֶה טָעִים מְאוֹד!', plain: 'זה טעים מאוד', words: ['זה', 'טעים', 'מאוד'], translit: 'ze ta-IM me-OD!', en: 'It is very tasty!', emoji: '😋' },
+  { he: 'אֶפְשָׁר עוֹד מַיִם?', plain: 'אפשר עוד מים', words: ['אפשר', 'עוד', 'מים'], translit: 'ef-SHAR od MA-yim?', en: 'May I have more water?', emoji: '💧' },
+  { he: 'מַה יֵשׁ לְקִינוּחַ?', plain: 'מה יש לקינוח', words: ['מה', 'יש', 'לקינוח'], translit: 'ma yesh le-ki-NU-ach?', en: 'What is for dessert?', emoji: '🍰' },
+  { he: 'חֶשְׁבּוֹן, בְּבַקָּשָׁה', plain: 'חשבון בבקשה', words: ['חשבון', 'בבקשה'], translit: 'chesh-BON, be-va-ka-SHA', en: 'The check, please', emoji: '🧾' },
+  { he: 'הַכֹּל הָיָה מְעוּלֶה!', plain: 'הכל היה מעולה', words: ['הכל', 'היה', 'מעולה'], translit: 'ha-KOL ha-YA me-u-LE!', en: 'Everything was excellent!', emoji: '⭐' },
+];
+const SENTENCES_KITCHEN = [
+  { he: 'בּוֹא נַעֲשֶׂה עוּגָה!', plain: 'בוא נעשה עוגה', words: ['בוא', 'נעשה', 'עוגה'], translit: 'bo na-a-SE u-GA!', en: 'Let us make a cake!', emoji: '🎂' },
+  { he: 'שָׂמִים סוּכָּר וְקֶמַח', plain: 'שמים סוכר וקמח', words: ['שמים', 'סוכר', 'וקמח'], translit: 'sa-MIM su-KAR ve-KE-mach', en: 'We put in sugar and flour', emoji: '🥣' },
+  { he: 'תַּעֲבִיר לִי אֶת הַמֶּלַח', plain: 'תעביר לי את המלח', words: ['תעביר', 'לי', 'את', 'המלח'], translit: 'ta-a-VIR li et ha-ME-lach', en: 'Pass me the salt', emoji: '🧂' },
+  { he: 'לְעַרְבֵּב טוֹב טוֹב', plain: 'לערבב טוב טוב', words: ['לערבב', 'טוב', 'טוב'], translit: 'le-ar-BEV tov tov', en: 'Mix it well', emoji: '🥄' },
+  { he: 'זְהִירוּת, זֶה חַם!', plain: 'זהירות זה חם', words: ['זהירות', 'זה', 'חם'], translit: 'ze-hi-RUT, ze cham!', en: 'Careful, it is hot!', emoji: '🔥' },
+  { he: 'הַתַּנּוּר חַם', plain: 'התנור חם', words: ['התנור', 'חם'], translit: 'ha-ta-NUR cham', en: 'The oven is hot', emoji: '♨️' },
+  { he: 'אֶפְשָׁר לִטְעוֹם?', plain: 'אפשר לטעום', words: ['אפשר', 'לטעום'], translit: 'ef-SHAR lit-OM?', en: 'Can I taste?', emoji: '😋' },
+  { he: 'אֵיזֶה רֵיחַ טוֹב!', plain: 'איזה ריח טוב', words: ['איזה', 'ריח', 'טוב'], translit: 'EY-ze RE-ach tov!', en: 'What a good smell!', emoji: '👃' },
+  { he: 'אֲנִי עוֹזֵר לְאִמָא בַּמִּטְבָּח', plain: 'אני עוזר לאמא במטבח', words: ['אני', 'עוזר', 'לאמא', 'במטבח'], translit: 'a-NEE o-ZER le-EE-ma ba-mit-BACH', en: 'I help Mom in the kitchen', emoji: '🧑‍🍳' },
+  { he: 'הָעוּגָה מוּכָנָה!', plain: 'העוגה מוכנה', words: ['העוגה', 'מוכנה'], translit: 'ha-u-GA mu-cha-NA!', en: 'The cake is ready!', emoji: '🍰' },
+];
+const SENTENCES_HOLIDAY = [
+  { he: 'שַׁבָּת שָׁלוֹם לְכוּלָּם!', plain: 'שבת שלום לכולם', words: ['שבת', 'שלום', 'לכולם'], translit: 'sha-BAT sha-LOM le-chu-LAM!', en: 'Shabbat shalom, everyone!', emoji: '🕯️' },
+  { he: 'חַג שָׂמֵחַ!', plain: 'חג שמח', words: ['חג', 'שמח'], translit: 'chag sa-ME-ach!', en: 'Happy holiday!', emoji: '🎉' },
+  { he: 'אֲנַחְנוּ מַדְלִיקִים נֵרוֹת', plain: 'אנחנו מדליקים נרות', words: ['אנחנו', 'מדליקים', 'נרות'], translit: 'a-NACH-nu mad-li-KIM ne-ROT', en: 'We light candles', emoji: '🕯️' },
+  { he: 'הַחַלָּה טְעִימָה מְאוֹד', plain: 'החלה טעימה מאוד', words: ['החלה', 'טעימה', 'מאוד'], translit: 'ha-cha-LA te-i-MA me-OD', en: 'The challah is very tasty', emoji: '🥖' },
+  { he: 'מִי רוֹצֶה מִיץ עֲנָבִים?', plain: 'מי רוצה מיץ ענבים', words: ['מי', 'רוצה', 'מיץ', 'ענבים'], translit: 'mi ro-TSE mits a-na-VIM?', en: 'Who wants grape juice?', emoji: '🍇' },
+  { he: 'יוֹם הוּלֶדֶת שָׂמֵחַ!', plain: 'יום הולדת שמח', words: ['יום', 'הולדת', 'שמח'], translit: 'yom hu-LE-det sa-ME-ach!', en: 'Happy birthday!', emoji: '🎂' },
+  { he: 'כָּל הַמִּשְׁפָּחָה בְּיַחַד', plain: 'כל המשפחה ביחד', words: ['כל', 'המשפחה', 'ביחד'], translit: 'kol ha-mish-pa-CHA be-YA-chad', en: 'The whole family together', emoji: '👨‍👩‍👧‍👦' },
+  { he: 'שָׁרִים שִׁירִים לְשַׁבָּת', plain: 'שרים שירים לשבת', words: ['שרים', 'שירים', 'לשבת'], translit: 'sha-RIM shi-RIM le-sha-BAT', en: 'We sing Shabbat songs', emoji: '🎶' },
+  { he: 'מַתָּנָה בִּשְׁבִילְךָ!', plain: 'מתנה בשבילך', words: ['מתנה', 'בשבילך'], translit: 'ma-ta-NA bish-vil-CHA!', en: 'A present for you!', emoji: '🎁' },
+  { he: 'אֲנִי אוֹהֵב אֶת הַחַגִּים', plain: 'אני אוהב את החגים', words: ['אני', 'אוהב', 'את', 'החגים'], translit: 'a-NEE o-HEV et ha-cha-GIM', en: 'I love the holidays', emoji: '🥰' },
+];
+const SENTENCES_DOCTOR = [
+  { he: 'כּוֹאֵב לִי הָרֹאשׁ', plain: 'כואב לי הראש', words: ['כואב', 'לי', 'הראש'], translit: 'ko-EV li ha-ROSH', en: 'My head hurts', emoji: '🤕' },
+  { he: 'אֲנִי לֹא מַרְגִּישׁ טוֹב', plain: 'אני לא מרגיש טוב', words: ['אני', 'לא', 'מרגיש', 'טוב'], translit: 'a-NEE lo mar-GISH tov', en: 'I do not feel well', emoji: '😷' },
+  { he: 'אֲנִי צָרִיךְ פְּלַסְטֶר', plain: 'אני צריך פלסטר', words: ['אני', 'צריך', 'פלסטר'], translit: 'a-NEE tsa-RICH PLAS-ter', en: 'I need a band-aid', emoji: '🩹' },
+  { he: 'פְּתַח אֶת הַפֶּה, בְּבַקָּשָׁה', plain: 'פתח את הפה בבקשה', words: ['פתח', 'את', 'הפה', 'בבקשה'], translit: 'ptach et ha-PE, be-va-ka-SHA', en: 'Open your mouth, please', emoji: '👄' },
+  { he: 'יֵשׁ לִי חוֹם?', plain: 'יש לי חום', words: ['יש', 'לי', 'חום'], translit: 'yesh li chom?', en: 'Do I have a fever?', emoji: '🌡️' },
+  { he: 'זֶה לֹא כּוֹאֵב בִּכְלָל', plain: 'זה לא כואב בכלל', words: ['זה', 'לא', 'כואב', 'בכלל'], translit: 'ze lo ko-EV bich-LAL', en: 'It does not hurt at all', emoji: '😊' },
+  { he: 'הָרוֹפֵא נֶחְמָד מְאוֹד', plain: 'הרופא נחמד מאוד', words: ['הרופא', 'נחמד', 'מאוד'], translit: 'ha-ro-FE nech-MAD me-OD', en: 'The doctor is very nice', emoji: '🩺' },
+  { he: 'לִשְׁתּוֹת הַרְבֵּה מַיִם', plain: 'לשתות הרבה מים', words: ['לשתות', 'הרבה', 'מים'], translit: 'lish-TOT har-BE MA-yim', en: 'Drink a lot of water', emoji: '💧' },
+  { he: 'רְפוּאָה שְׁלֵמָה!', plain: 'רפואה שלמה', words: ['רפואה', 'שלמה'], translit: 're-fu-A shle-MA!', en: 'Feel better soon!', emoji: '💐' },
+  { he: 'אֲנִי מַרְגִּישׁ יוֹתֵר טוֹב', plain: 'אני מרגיש יותר טוב', words: ['אני', 'מרגיש', 'יותר', 'טוב'], translit: 'a-NEE mar-GISH yo-TER tov', en: 'I feel better', emoji: '💪' },
+];
+const SENTENCES_CALLS = [
+  { he: 'הַיי סַבְתָא, אַתְּ שׁוֹמַעַת אוֹתִי?', plain: 'היי סבתא את שומעת אותי', words: ['היי', 'סבתא', 'את', 'שומעת', 'אותי'], translit: 'hai SAV-ta, at sho-MA-at o-TEE?', en: 'Hi Savta, can you hear me?', emoji: '👵' },
+  { he: 'תַּדְלִיק אֶת הַמַּצְלֵמָה', plain: 'תדליק את המצלמה', words: ['תדליק', 'את', 'המצלמה'], translit: 'tad-LIK et ha-mats-le-MA', en: 'Turn on the camera', emoji: '📷' },
+  { he: 'אֲנִי לֹא רוֹאֶה אוֹתְךָ', plain: 'אני לא רואה אותך', words: ['אני', 'לא', 'רואה', 'אותך'], translit: 'a-NEE lo ro-E ot-CHA', en: 'I cannot see you', emoji: '🙈' },
+  { he: 'הַקּוֹל נֶעֱלַם', plain: 'הקול נעלם', words: ['הקול', 'נעלם'], translit: 'ha-KOL ne-e-LAM', en: 'The sound disappeared', emoji: '🔇' },
+  { he: 'תַּרְאֶה לִי!', plain: 'תראה לי', words: ['תראה', 'לי'], translit: 'tar-E li!', en: 'Show me!', emoji: '👀' },
+  { he: 'תִּשְׁלַח לִי תְּמוּנָה', plain: 'תשלח לי תמונה', words: ['תשלח', 'לי', 'תמונה'], translit: 'tish-LACH li tmu-NA', en: 'Send me a picture', emoji: '🖼️' },
+  { he: 'מָתַי אַתֶּם בָּאִים?', plain: 'מתי אתם באים', words: ['מתי', 'אתם', 'באים'], translit: 'ma-TAI a-TEM ba-IM?', en: 'When are you coming?', emoji: '✈️' },
+  { he: 'אֲנִי אֶתְקַשֵּׁר מָחָר', plain: 'אני אתקשר מחר', words: ['אני', 'אתקשר', 'מחר'], translit: 'a-NEE et-ka-SHER ma-CHAR', en: 'I will call tomorrow', emoji: '📅' },
+  { he: 'דַּשׁ לְסַבָּא!', plain: 'דש לסבא', words: ['דש', 'לסבא'], translit: 'dash le-SA-ba!', en: 'Say hi to Saba!', emoji: '👴' },
+  { he: 'בַּיי, נְדַבֵּר מָחָר!', plain: 'ביי נדבר מחר', words: ['ביי', 'נדבר', 'מחר'], translit: 'bai, ne-da-BER ma-CHAR!', en: 'Bye, we will talk tomorrow!', emoji: '👋' },
+];
+const SENTENCES_PLAY = [
+  { he: 'מִי רוֹצֶה לְשַׂחֵק?', plain: 'מי רוצה לשחק', words: ['מי', 'רוצה', 'לשחק'], translit: 'mi ro-TSE le-sa-CHEK?', en: 'Who wants to play?', emoji: '🙌' },
+  { he: 'תִּמְסוֹר אֶת הַכַּדּוּר!', plain: 'תמסור את הכדור', words: ['תמסור', 'את', 'הכדור'], translit: 'tim-SOR et ha-ka-DUR!', en: 'Pass the ball!', emoji: '⚽' },
+  { he: 'אַתָּה תּוֹפֵס!', plain: 'אתה תופס', words: ['אתה', 'תופס'], translit: 'a-TA to-FES!', en: 'You are it!', emoji: '🏃' },
+  { he: 'נִיצַּחְתִּי בַּמִּשְׂחָק!', plain: 'ניצחתי במשחק', words: ['ניצחתי', 'במשחק'], translit: 'ni-TSACH-ti ba-mis-CHAK!', en: 'I won the game!', emoji: '🏆' },
+  { he: 'עוֹד פַּעַם!', plain: 'עוד פעם', words: ['עוד', 'פעם'], translit: 'od PA-am!', en: 'One more time!', emoji: '🔁' },
+  { he: 'בּוֹא נַעֲשֶׂה תַּחֲרוּת!', plain: 'בוא נעשה תחרות', words: ['בוא', 'נעשה', 'תחרות'], translit: 'bo na-a-SE ta-cha-RUT!', en: 'Let us have a race!', emoji: '🏁' },
+  { he: 'זֶה הַתּוֹר שֶׁלִּי', plain: 'זה התור שלי', words: ['זה', 'התור', 'שלי'], translit: 'ze ha-TOR she-LI', en: 'It is my turn', emoji: '👆' },
+  { he: 'אֲנִי סוֹפֵר עַד עֶשֶׂר', plain: 'אני סופר עד עשר', words: ['אני', 'סופר', 'עד', 'עשר'], translit: 'a-NEE so-FER ad E-ser', en: 'I count to ten', emoji: '🔢' },
+  { he: 'בּוֹא לְשַׂחֵק אֶצְלִי', plain: 'בוא לשחק אצלי', words: ['בוא', 'לשחק', 'אצלי'], translit: 'bo le-sa-CHEK ets-LI', en: 'Come play at my house', emoji: '🏡' },
+  { he: 'מִשְׂחָק טוֹב!', plain: 'משחק טוב', words: ['משחק', 'טוב'], translit: 'mis-CHAK tov!', en: 'Good game!', emoji: '🤝' },
+];
+const SENTENCES_CLASS = [
+  { he: 'סִיַּימְתִּי אֶת הָעֲבוֹדָה!', plain: 'סיימתי את העבודה', words: ['סיימתי', 'את', 'העבודה'], translit: 'si-YAM-ti et ha-a-vo-DA!', en: 'I finished the work!', emoji: '✅' },
+  { he: 'אֵיזֶה עַמּוּד?', plain: 'איזה עמוד', words: ['איזה', 'עמוד'], translit: 'EY-ze a-MUD?', en: 'What page?', emoji: '📄' },
+  { he: 'אֶפְשָׁר לָצֵאת, בְּבַקָּשָׁה?', plain: 'אפשר לצאת בבקשה', words: ['אפשר', 'לצאת', 'בבקשה'], translit: 'ef-SHAR la-TSET, be-va-ka-SHA?', en: 'May I go out, please?', emoji: '🚪' },
+  { he: 'יֵשׁ לִי אֶת הַתְּשׁוּבָה!', plain: 'יש לי את התשובה', words: ['יש', 'לי', 'את', 'התשובה'], translit: 'yesh li et ha-tshu-VA!', en: 'I have the answer!', emoji: '🙋' },
+  { he: 'מַה שִׁיעוּרֵי הַבַּיִת?', plain: 'מה שיעורי הבית', words: ['מה', 'שיעורי', 'הבית'], translit: 'ma shi-u-REY ha-BA-yit?', en: 'What is the homework?', emoji: '📓' },
+  { he: 'הַמּוֹרָה אָמְרָה לִכְתּוֹב', plain: 'המורה אמרה לכתוב', words: ['המורה', 'אמרה', 'לכתוב'], translit: 'ha-mo-RA am-RA lich-TOV', en: 'The teacher said to write', emoji: '✏️' },
+  { he: 'אֲנִי צָרִיךְ עִיפָּרוֹן', plain: 'אני צריך עיפרון', words: ['אני', 'צריך', 'עיפרון'], translit: 'a-NEE tsa-RICH i-pa-RON', en: 'I need a pencil', emoji: '✏️' },
+  { he: 'מָתַי הַהַפְסָקָה?', plain: 'מתי ההפסקה', words: ['מתי', 'ההפסקה'], translit: 'ma-TAI ha-haf-sa-KA?', en: 'When is recess?', emoji: '⏰' },
+  { he: 'אֲנִי יוֹשֵׁב לְיַד חָבֵר', plain: 'אני יושב ליד חבר', words: ['אני', 'יושב', 'ליד', 'חבר'], translit: 'a-NEE yo-SHEV le-YAD cha-VER', en: 'I sit next to a friend', emoji: '🪑' },
+  { he: 'הַשִּׁיעוּר מְעַנְיֵין', plain: 'השיעור מעניין', words: ['השיעור', 'מעניין'], translit: 'ha-shi-UR me-an-YEN', en: 'The lesson is interesting', emoji: '🤓' },
+];
+const SENTENCES_WEATHER = [
+  { he: 'חַם הַיּוֹם!', plain: 'חם היום', words: ['חם', 'היום'], translit: 'cham ha-YOM!', en: 'It is hot today!', emoji: '☀️' },
+  { he: 'יוֹרֵד גֶּשֶׁם', plain: 'יורד גשם', words: ['יורד', 'גשם'], translit: 'yo-RED GE-shem', en: 'It is raining', emoji: '🌧️' },
+  { he: 'קַח מְעִיל, קַר בַּחוּץ', plain: 'קח מעיל קר בחוץ', words: ['קח', 'מעיל', 'קר', 'בחוץ'], translit: 'kach me-IL, kar ba-CHUTS', en: 'Take a coat, it is cold outside', emoji: '🧥' },
+  { he: 'בּוֹא נֵלֵךְ לַיָּם!', plain: 'בוא נלך לים', words: ['בוא', 'נלך', 'לים'], translit: 'bo ne-LECH la-YAM!', en: 'Let us go to the beach!', emoji: '🏖️' },
+  { he: 'יֵשׁ שֶׁמֶשׁ וְאֵין עֲנָנִים', plain: 'יש שמש ואין עננים', words: ['יש', 'שמש', 'ואין', 'עננים'], translit: 'yesh SHE-mesh ve-EYN a-na-NIM', en: 'It is sunny with no clouds', emoji: '🌤️' },
+  { he: 'אֲנִי רוֹאֶה קֶשֶׁת!', plain: 'אני רואה קשת', words: ['אני', 'רואה', 'קשת'], translit: 'a-NEE ro-E KE-shet!', en: 'I see a rainbow!', emoji: '🌈' },
+  { he: 'בַּחוֹרֶף קַר', plain: 'בחורף קר', words: ['בחורף', 'קר'], translit: 'ba-CHO-ref kar', en: 'In winter it is cold', emoji: '❄️' },
+  { he: 'בַּקַּיִץ הוֹלְכִים לַבְּרֵיכָה', plain: 'בקיץ הולכים לבריכה', words: ['בקיץ', 'הולכים', 'לבריכה'], translit: 'ba-KA-yits hol-CHIM la-brey-CHA', en: 'In summer we go to the pool', emoji: '🏊' },
+  { he: 'אֵיזֶה רוּחַ חֲזָקָה!', plain: 'איזה רוח חזקה', words: ['איזה', 'רוח', 'חזקה'], translit: 'EY-ze RU-ach cha-za-KA!', en: 'What a strong wind!', emoji: '💨' },
+  { he: 'מָחָר יִהְיֶה יוֹם יָפֶה', plain: 'מחר יהיה יום יפה', words: ['מחר', 'יהיה', 'יום', 'יפה'], translit: 'ma-CHAR yih-YE yom ya-FE', en: 'Tomorrow will be a beautiful day', emoji: '🌅' },
+];
+
 // Level map. kind: letters | vowels | review | vocab | sentences
 const LEVELS = [
   { id: 'l1',  title: 'First Letters',      sub: 'א ב ג ד ה',        emoji: '🌱', kind: 'letters',   items: LETTERS.slice(0, 5) },
@@ -344,6 +442,14 @@ const LEVELS = [
   { id: 'l27', title: 'Shopping Time',      sub: 'Buy it in Hebrew',  emoji: '🛒', kind: 'sentences', items: SENTENCES_SHOP },
   { id: 'l28', title: 'Help Me Talk',       sub: 'Never get stuck',   emoji: '🙋', kind: 'sentences', items: SENTENCES_HELP },
   { id: 'l29', title: 'Feelings & Fun',     sub: 'Say how you feel',  emoji: '💬', kind: 'sentences', items: SENTENCES_FEEL },
+  { id: 'l30', title: 'At the Restaurant',  sub: 'Order like a pro',  emoji: '🍽️', kind: 'sentences', items: SENTENCES_REST },
+  { id: 'l31', title: 'In the Kitchen',     sub: 'Cook & talk',       emoji: '🍳', kind: 'sentences', items: SENTENCES_KITCHEN },
+  { id: 'l32', title: 'Shabbat & Holidays', sub: 'Family celebrations', emoji: '🕎', kind: 'sentences', items: SENTENCES_HOLIDAY },
+  { id: 'l33', title: 'At the Doctor',      sub: 'Say what hurts',    emoji: '🤕', kind: 'sentences', items: SENTENCES_DOCTOR },
+  { id: 'l34', title: 'Video Calls',        sub: 'Talk to Savta!',    emoji: '📱', kind: 'sentences', items: SENTENCES_CALLS },
+  { id: 'l35', title: 'Playground & Games', sub: 'Play in Hebrew',    emoji: '⚽', kind: 'sentences', items: SENTENCES_PLAY },
+  { id: 'l36', title: 'In the Classroom',   sub: 'School talk',       emoji: '🎒', kind: 'sentences', items: SENTENCES_CLASS },
+  { id: 'l37', title: 'Weather & Seasons',  sub: 'Sun, rain & beach', emoji: '☀️', kind: 'sentences', items: SENTENCES_WEATHER },
 ];
 
 // Costume shop — slots: hat | eyes | body (drawn on avatar) + hand | pet | ride | treasure (stickers)
